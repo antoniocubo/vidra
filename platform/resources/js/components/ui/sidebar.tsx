@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { Slot } from '@radix-ui/react-slot';
 import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
@@ -15,11 +16,13 @@ import { cn } from '@/lib/utils';
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '16rem';
-const SIDEBAR_WIDTH_MOBILE = '18rem';
+
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 
 type SidebarContext = {
+    mobileMenuId: string;
+    mobileTriggerRef: React.RefObject<HTMLButtonElement | null>;
     state: 'expanded' | 'collapsed';
     open: boolean;
     setOpen: (open: boolean) => void;
@@ -48,6 +51,8 @@ const SidebarProvider = React.forwardRef<
         onOpenChange?: (open: boolean) => void;
     }
 >(({ defaultOpen = true, open: openProp, onOpenChange: setOpenProp, className, style, children, ...props }, ref) => {
+    const mobileMenuId = React.useId();
+    const mobileTriggerRef = React.useRef<HTMLButtonElement>(null);
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 
@@ -83,8 +88,7 @@ const SidebarProvider = React.forwardRef<
             }
         };
 
-        window.addEventListener('mobile-navigation', handleMobileNavigation);
-        return () => window.removeEventListener('mobile-navigation', handleMobileNavigation);
+        return router.on('navigate', handleMobileNavigation);
     }, [isMobile, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -106,6 +110,8 @@ const SidebarProvider = React.forwardRef<
 
     const contextValue = React.useMemo<SidebarContext>(
         () => ({
+            mobileMenuId,
+            mobileTriggerRef,
             state,
             open,
             setOpen,
@@ -114,7 +120,7 @@ const SidebarProvider = React.forwardRef<
             setOpenMobile,
             toggleSidebar,
         }),
-        [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
+        [mobileMenuId, state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
     );
 
     return (
@@ -148,7 +154,7 @@ const Sidebar = React.forwardRef<
         collapsible?: 'offcanvas' | 'icon' | 'none';
     }
 >(({ side = 'left', variant = 'sidebar', collapsible = 'offcanvas', className, children, ...props }, ref) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, openMobile, setOpenMobile, mobileMenuId, mobileTriggerRef } = useSidebar();
 
     if (collapsible === 'none') {
         return (
@@ -164,15 +170,26 @@ const Sidebar = React.forwardRef<
                 <SheetContent
                     data-sidebar="sidebar"
                     data-mobile="true"
-                    className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-                    style={
-                        {
-                            '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-                        } as React.CSSProperties
-                    }
+                    id={mobileMenuId}
+                    aria-describedby={undefined}
+                    closeLabel="Fechar menu"
+                    className="w-[85vw] max-w-80 bg-sidebar p-0 text-sidebar-foreground sm:max-w-80"
+                    onOpenAutoFocus={(event) => {
+                        // Começa no item da página atual (ou no primeiro link), não no rodapé da gaveta.
+                        const menu = document.getElementById(mobileMenuId);
+                        const target = menu?.querySelector<HTMLElement>('[aria-current="page"]') ?? menu?.querySelector<HTMLElement>('a[href]');
+                        if (target) {
+                            event.preventDefault();
+                            target.focus();
+                        }
+                    }}
+                    onCloseAutoFocus={(event) => {
+                        event.preventDefault();
+                        mobileTriggerRef.current?.focus();
+                    }}
                     side={side}
                 >
-                    <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
                     <div className="flex h-full w-full flex-col">{children}</div>
                 </SheetContent>
             </Sheet>
@@ -243,7 +260,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
                 {...props}
             >
                 <PanelLeft />
-                <span className="sr-only">Toggle Sidebar</span>
+                <span className="sr-only">Recolher menu</span>
             </Button>
         );
     },
@@ -257,10 +274,10 @@ const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<'bu
         <button
             ref={ref}
             data-sidebar="rail"
-            aria-label="Toggle Sidebar"
+            aria-label="Recolher menu"
             tabIndex={-1}
             onClick={toggleSidebar}
-            title="Toggle Sidebar"
+            title="Recolher menu"
             className={cn(
                 'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
                 'in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize',
