@@ -1,4 +1,5 @@
 import { Alert, Button, Checkbox, FormField, IconButton, TextInput, VidraLogo } from '@/components/vidra';
+import { useTemaClaro } from '@/hooks/use-appearance';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
@@ -26,6 +27,7 @@ const linkClasses =
     'text-brand-500 hover:text-primary focus-visible:outline-brand-500 rounded-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2';
 
 export default function Login({ status, canResetPassword, vetUrl }: LoginProps) {
+    useTemaClaro();
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
         email: '',

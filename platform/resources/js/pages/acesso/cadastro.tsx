@@ -14,6 +14,7 @@ import {
     TextInput,
     VidraLogo,
 } from '@/components/vidra';
+import { useTemaClaro } from '@/hooks/use-appearance';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 
@@ -55,6 +56,7 @@ const proximos = ['Continuar para o responsável técnico', 'Continuar para o se
 const numero = (valor: number) => valor.toLocaleString('pt-BR');
 
 export default function Cadastro({ ufs, planos, planoInicial, cobrancaInicial }: Props) {
+    useTemaClaro();
     const [etapa, setEtapa] = useState(0);
     const form = useRef<HTMLFormElement>(null);
     const titulo = useRef<HTMLHeadingElement>(null);
