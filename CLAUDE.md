@@ -45,17 +45,37 @@ O código de negócio fica em `platform/src` (namespace `Vidra\`), separado por 
 ```
 src/
 ├── Shared/Domain/               value objects comuns (Email, Telefone, Uf, Uuid) e DomainException
-└── Cadastros/                   módulo
-    ├── Domain/                  entidades, value objects, interfaces de repositório, exceções de negócio
-    ├── Application/             casos de uso (um por classe) e seus DTOs de entrada
-    └── Infrastructure/          Eloquent, filas, APIs externas, ServiceProvider do módulo
+├── Veterinaria/                 linha Vidra Pet: tutor, animal, veterinário (CRMV), fatura da clínica
+│   ├── Domain/                  entidades, value objects, interfaces de repositório, exceções de negócio
+│   ├── Application/             casos de uso (um por classe) e seus DTOs de entrada
+│   └── Infrastructure/          Eloquent, filas, APIs externas, ServiceProvider do módulo
+└── Humana/                      linha Vidra Clínica (fase 3): paciente, médico (CRM), convênio, TISS
 app/Http/Controllers/Lab/        adaptadores HTTP do portal do laboratório
 app/Http/Controllers/Vet/        adaptadores HTTP do acesso do veterinário (a criar)
 app/Http/Requests/               validação de formato da entrada HTTP
 resources/js/pages/{lab,vet,laudo}/   telas Inertia de cada superfície
+resources/js/components/vidra/        componentes do design system (genéricos)
+resources/js/components/vidra/pet/    componentes só da linha Pet
 ```
 
-Módulos previstos: `Cadastros` (tutores, animais, veterinários, clínicas), `Pedidos`, `Amostras`, `Bancada`, `Laudos`, `Financeiro`, `Catalogo` (exames e referências), `Acesso` (usuários, laboratórios, vínculos, tenancy). Crie o módulo quando o primeiro caso de uso dele for escrito, não antes.
+### Um código, duas linhas de produto
+
+O mesmo repositório e a mesma aplicação atendem a **Vidra Pet** e a **Vidra Clínica**. A linha é um **dado do laboratório** (`linha`: `pet` ou `clinica`, definido no cadastro dele), não um fork nem outro deploy. Ela decide quais telas aparecem, os textos, a cor da linha (`pet-500` ou `clinic-500`) e as regras de referência.
+
+- **Núcleo neutro:** `Pedidos`, `Amostras`, `Bancada`, `Laudos`, `Catalogo` (exames e referências), `Financeiro` e `Acesso` (usuários, laboratórios, vínculos, tenancy) falam de **paciente** e **solicitante** por interfaces no domínio. Nunca de animal, tutor, CRMV, CPF ou convênio.
+- **Módulos de linha:** `Veterinaria` (tutor, animal, espécie, veterinário/CRMV, clínica que paga) e `Humana` (paciente, médico/CRM, convênio, TISS) implementam essas interfaces.
+- **Direção:** a linha pode usar o núcleo; o núcleo nunca usa uma linha; uma linha nunca usa a outra. Está em `tests/Arch`. Ao criar um módulo do núcleo, inclua-o na regra "o núcleo não conhece nenhuma linha de produto".
+- **Front:** componentes genéricos em `components/vidra/`; os de uma linha em `components/vidra/pet/` ou `components/vidra/clinica/`. Texto que muda por linha ("tutor" ou "paciente") vem do back, não de `if` espalhado na tela.
+
+| | Vidra Pet | Vidra Clínica |
+| --- | --- | --- |
+| Paciente | Animal, ligado a um tutor | Pessoa, com CPF e CNS |
+| Solicitante | Veterinário (CRMV) | Médico (CRM) e outros conselhos |
+| Referência muda por | Espécie, raça, idade | Sexo, idade, gestação |
+| Quem paga | Clínica (fatura mensal), veterinário ou tutor | Particular ou convênio (TISS) |
+| Regulação | Mais leve | RDC 786/2023, CNES, dado sensível na LGPD |
+
+Crie um módulo quando o primeiro caso de uso dele for escrito, não antes.
 
 ### Regra de dependência
 
@@ -82,7 +102,7 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 | Model Eloquent | `VeterinarioModel` | só persistência, `final`, sem regra de negócio, nunca sai da `Infrastructure` |
 | FormRequest | `RegistrarVeterinarioRequest` | valida formato e tem `toInput()` |
 | Controller | `VeterinarioController` | fino: request → caso de uso → resposta; traduz `DomainException` em `ValidationException` |
-| Binding | `CadastrosServiceProvider` | um provider por módulo, registrado em `bootstrap/providers.php` |
+| Binding | `VeterinariaServiceProvider` | um provider por módulo, registrado em `bootstrap/providers.php` |
 
 ### Clean code
 
@@ -106,13 +126,21 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 
 - Inertia + React 19 + TypeScript + Tailwind 4 + shadcn/ui (starter kit oficial do Laravel).
 - Uma pasta de páginas por superfície: `pages/lab`, `pages/vet`, `pages/laudo`.
-- Componentes de formulário reutilizáveis em `resources/js/components` (`FormField`, `NativeSelect`).
+- **Design system em `resources/js/components/vidra`**, importado de `@/components/vidra` (e `@/components/vidra/pet` para a linha Pet). Use estes antes de criar algo novo; os de `components/ui` (shadcn) são base interna.
+  - Ações: `Button` (primary, secondary, ghost, danger; sm, md, lg; `loading`, `asChild`), `IconButton` (exige `label`).
+  - Formulário: `FormField` + `TextInput` (`mono`, `icon`, `suffix`), `Select`, `Checkbox`, `Switch`, `RadioCardGroup`, `ChipToggleGroup`, `SegmentedControl`, `ScanField` (leitor de código de barras), `FormSection`, `FormActions`.
+  - Status: `StatusBadge` (`tone`: ok, warn, crit, info, neutral), `ProductBadge`, `AiBadge`, `CountPill`, `Alert`, `Toast` + `useFlashToast` (lê `flash.success`), `EmptyState`.
+  - Dados: `MetricCard`, `DataTable`, `ResultTable` (alto, baixo, crítico, valor anterior), `DetailList`, `ProgressBar`.
+  - Estrutura: `PageHeader`, `Card`, `Tabs` + `TabPanel`, `StatusStepper`, `ConfirmDialog`, `LabSwitcher`, `InitialsAvatar`, `LabMark`, `PersonRow`.
+  - Pet: `AnimalCard`, `SampleLabel`.
+  - Vitrine com todos os componentes: `/dev/componentes` (só em local e testing). Ao criar ou mudar um componente, atualize a vitrine.
+  - Referência visual: página "Componentes" do protótipo.
 - Tokens da Vidra em `resources/css/app.css` como `--vidra-*`, ligados aos papéis do shadcn (`--primary`, `--border` etc.). Use as classes do Tailwind (`bg-primary`, `text-muted-foreground`, `bg-crit-100`, `text-ok-600`, `font-display`, `font-mono`), nunca cor em hex no componente.
 - Campos com 44px de altura no mínimo (`h-11`). Labels reais com `htmlFor`.
 
 ## Decisões de produto
 
-- **Segmento:** laboratórios veterinários primeiro. Marca-mãe Vidra, linha Vidra Pet.
+- **Segmento:** laboratórios veterinários primeiro (Vidra Pet); clínicos humanos na fase 3 (Vidra Clínica), no mesmo código.
 - **Diferenciais:** nuvem com preço acessível, laudo entregue por e-mail e link, IA no fluxo.
 - **Superfícies (todas na mesma aplicação, separadas por subdomínio):**
   - `app.vidralab.com.br`: portal do laboratório.

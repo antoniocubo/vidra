@@ -10,11 +10,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Vidra\Cadastros\Application\RegistrarVeterinario\RegistrarVeterinario;
-use Vidra\Cadastros\Domain\Veterinario\Exceptions\CrmvJaCadastrado;
-use Vidra\Cadastros\Domain\Veterinario\Tratamento;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 use Vidra\Shared\Domain\ValueObjects\Uf;
+use Vidra\Veterinaria\Application\RegistrarVeterinario\RegistrarVeterinario;
+use Vidra\Veterinaria\Domain\Veterinario\Exceptions\CrmvJaCadastrado;
+use Vidra\Veterinaria\Domain\Veterinario\Tratamento;
 
 /**
  * Adaptador HTTP: traduz a requisição para o caso de uso e o resultado para Inertia.

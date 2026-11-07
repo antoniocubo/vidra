@@ -6,9 +6,9 @@ namespace App\Http\Requests\Lab;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Vidra\Cadastros\Application\RegistrarVeterinario\RegistrarVeterinarioInput;
-use Vidra\Cadastros\Domain\Veterinario\Tratamento;
 use Vidra\Shared\Domain\ValueObjects\Uf;
+use Vidra\Veterinaria\Application\RegistrarVeterinario\RegistrarVeterinarioInput;
+use Vidra\Veterinaria\Domain\Veterinario\Tratamento;
 
 /**
  * Valida o formato da entrada HTTP. Regras de negócio ficam no domínio.

@@ -4,5 +4,5 @@ declare(strict_types=1);
 
 return [
     App\Providers\AppServiceProvider::class,
-    Vidra\Cadastros\Infrastructure\CadastrosServiceProvider::class,
+    Vidra\Veterinaria\Infrastructure\VeterinariaServiceProvider::class,
 ];

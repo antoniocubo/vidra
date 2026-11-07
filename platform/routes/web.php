@@ -16,5 +16,10 @@ Route::middleware(['auth'])->group(function (): void {
 });
 
 require __DIR__.'/lab.php';
+
+if (app()->environment(['local', 'testing'])) {
+    require __DIR__.'/dev.php';
+}
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

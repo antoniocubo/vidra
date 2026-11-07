@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Illuminate\Support\Str;
-use Vidra\Cadastros\Domain\Veterinario\Crmv;
-use Vidra\Cadastros\Domain\Veterinario\Veterinario;
-use Vidra\Cadastros\Domain\Veterinario\VeterinarioId;
-use Vidra\Cadastros\Domain\Veterinario\VeterinarioRepository;
+use Vidra\Veterinaria\Domain\Veterinario\Crmv;
+use Vidra\Veterinaria\Domain\Veterinario\Veterinario;
+use Vidra\Veterinaria\Domain\Veterinario\VeterinarioId;
+use Vidra\Veterinaria\Domain\Veterinario\VeterinarioRepository;
 
 final class InMemoryVeterinarioRepository implements VeterinarioRepository
 {
