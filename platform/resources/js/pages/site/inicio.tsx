@@ -1,4 +1,5 @@
 import { AiBadge, Button, SegmentedControl, StatusBadge, VidraLogo } from '@/components/vidra';
+import { useTemaClaro } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -199,6 +200,7 @@ function Precos({ planos }: { planos: Plano[] }) {
 
 export default function Inicio({ planos }: { planos: Plano[] }) {
     const { auth } = usePage<SharedData>().props;
+    useTemaClaro();
     return (
         <div className="bg-background text-foreground">
             <Head title="Sistema para laboratórios veterinários">

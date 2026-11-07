@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
 const prefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+// Páginas públicas (como a landing) são a cara da marca: ficam claras mesmo com o sistema no escuro.
+let claroForcado = false;
+
 const applyTheme = (appearance: Appearance) => {
-    const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
+    const isDark = !claroForcado && (appearance === 'dark' || (appearance === 'system' && prefersDark()));
 
     document.documentElement.classList.toggle('dark', isDark);
 };
@@ -24,6 +27,19 @@ export function initializeTheme() {
 
     // Add the event listener for system theme changes...
     mediaQuery.addEventListener('change', handleSystemThemeChange);
+}
+
+/** Mantém a página no tema claro enquanto estiver montada e devolve o tema escolhido ao sair. */
+export function useTemaClaro() {
+    useLayoutEffect(() => {
+        claroForcado = true;
+        handleSystemThemeChange();
+
+        return () => {
+            claroForcado = false;
+            handleSystemThemeChange();
+        };
+    }, []);
 }
 
 export function useAppearance() {
