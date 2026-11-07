@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
+import { type ReactNode } from 'react';
 
-export type RadioCardOption<T extends string> = { value: T; label: string; description?: string };
+export type RadioCardOption<T extends string> = { value: T; label: string; description?: ReactNode; disabled?: boolean };
 
 export type RadioCardGroupProps<T extends string> = {
     name: string;
@@ -26,11 +27,13 @@ export function RadioCardGroup<T extends string>({ name, value, onChange, option
                             key={option.value}
                             className={cn(
                                 'has-focus-visible:outline-brand-500 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg p-4 has-focus-visible:outline-2 has-focus-visible:outline-offset-2',
+                                option.disabled && 'cursor-not-allowed opacity-45',
                                 selected ? 'border-brand-500 bg-secondary border-2 p-[15px]' : 'border-border bg-card border',
                             )}
                         >
                             <input
                                 type="radio"
+                                disabled={option.disabled}
                                 name={name}
                                 value={option.value}
                                 checked={selected}

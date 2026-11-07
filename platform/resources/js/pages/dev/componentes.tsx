@@ -118,7 +118,7 @@ export default function VitrineDeComponentes() {
     const [locais, setLocais] = useState<string[]>(['vetcare']);
     const [especie, setEspecie] = useState('cao');
     const [prioridade, setPrioridade] = useState<'rotina' | 'urgente'>('rotina');
-    const [pagador, setPagador] = useState<'clinica' | 'tutor'>('clinica');
+    const [pagador, setPagador] = useState<'clinica' | 'tutor' | 'indisponivel'>('clinica');
     const [acesso, setAcesso] = useState(true);
     const [aba, setAba] = useState<'exames' | 'amostras' | 'historico'>('exames');
     const [lab, setLab] = useState('alfa');
@@ -210,6 +210,12 @@ export default function VitrineDeComponentes() {
                                     description: 'O exame entra na fatura da clínica escolhida no pedido.',
                                 },
                                 { value: 'tutor', label: 'O tutor, no balcão', description: 'Paga na entrega da amostra, por Pix ou cartão.' },
+                                {
+                                    value: 'indisponivel',
+                                    label: 'Em breve',
+                                    description: <span>Opção indisponível para seleção.</span>,
+                                    disabled: true,
+                                },
                             ]}
                         />
                     </div>

@@ -2,55 +2,60 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Auth;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Inertia\Testing\AssertableInertia as Assert;
 
-class AuthenticationTest extends TestCase
-{
-    use RefreshDatabase;
+it('mostra a tela de login com o endereço do acesso do veterinário', function (): void {
+    $this->get('/login')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/login')
+            ->where('vetUrl', 'https://vet.vidralab.com.br'));
+});
 
-    public function test_login_screen_can_be_rendered(): void
-    {
-        $response = $this->get('/login');
+it('entra com e-mail e senha corretos', function (): void {
+    $user = User::factory()->create();
 
-        $response->assertStatus(200);
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticated();
+});
+
+it('recusa senha errada com a mensagem em português', function (): void {
+    $user = User::factory()->create();
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'senha-errada'])
+        ->assertSessionHasErrors(['email' => 'E-mail ou senha não conferem.']);
+
+    $this->assertGuest();
+});
+
+it('bloqueia o acesso depois de 5 tentativas erradas', function (): void {
+    $user = User::factory()->create();
+
+    foreach (range(1, 5) as $_) {
+        $this->post('/login', ['email' => $user->email, 'password' => 'senha-errada']);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
-    {
-        $user = User::factory()->create();
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertSessionHasErrors(['email' => 'Muitas tentativas. Tente de novo em 1 minuto.']);
 
-        $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
-        ]);
+    $this->assertGuest();
+});
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
-    }
+it('guarda o token de "manter conectado" quando pedido', function (): void {
+    $user = User::factory()->create();
 
-    public function test_users_can_not_authenticate_with_invalid_password(): void
-    {
-        $user = User::factory()->create();
+    $this->post('/login', ['email' => $user->email, 'password' => 'password', 'remember' => true]);
 
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+    expect($user->fresh()->remember_token)->not->toBeNull();
+});
 
-        $this->assertGuest();
-    }
+it('sai da conta', function (): void {
+    $user = User::factory()->create();
 
-    public function test_users_can_logout(): void
-    {
-        $user = User::factory()->create();
+    $this->actingAs($user)->post('/logout')->assertRedirect('/');
 
-        $response = $this->actingAs($user)->post('/logout');
-
-        $this->assertGuest();
-        $response->assertRedirect('/');
-    }
-}
+    $this->assertGuest();
+});

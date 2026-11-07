@@ -17,7 +17,7 @@ arch('o domínio compartilhado é puro')
 
 arch('o núcleo não conhece nenhuma linha de produto')
     // Ao criar um módulo do núcleo (Pedidos, Amostras, Bancada, Laudos...), inclua-o aqui.
-    ->expect(['Vidra\\Shared'])
+    ->expect(['Vidra\\Shared', 'Vidra\\Acesso'])
     ->not->toUse(['Vidra\\Veterinaria', 'Vidra\\Humana']);
 
 arch('uma linha não usa a outra')
@@ -44,11 +44,11 @@ arch('adaptadores de infraestrutura são classes finais')
     ->toBeFinal();
 
 arch('repositórios do domínio são só contratos')
-    ->expect('Vidra\\Veterinaria\\Domain\\Veterinario\\VeterinarioRepository')
+    ->expect(['Vidra\\Veterinaria\\Domain\\Veterinario\\VeterinarioRepository', 'Vidra\\Acesso\\Domain\\LaboratorioRepository'])
     ->toBeInterface();
 
 arch('controllers não usam Eloquent direto')
-    ->expect('App\\Http\\Controllers\\Lab')
+    ->expect(['App\\Http\\Controllers\\Lab', 'App\\Http\\Controllers\\Acesso'])
     ->not->toUse(['Illuminate\\Database', 'Vidra\\*\\Infrastructure']);
 
 arch('sem funções de depuração esquecidas')

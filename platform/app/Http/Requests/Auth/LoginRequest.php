@@ -47,7 +47,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'email' => 'E-mail ou senha não conferem.',
             ]);
         }
 
@@ -67,13 +67,10 @@ class LoginRequest extends FormRequest
 
         event(new Lockout($this));
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+        $minutes = (int) ceil(RateLimiter::availableIn($this->throttleKey()) / 60);
 
         throw ValidationException::withMessages([
-            'email' => __('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => sprintf('Muitas tentativas. Tente de novo em %d %s.', $minutes, $minutes === 1 ? 'minuto' : 'minutos'),
         ]);
     }
 
