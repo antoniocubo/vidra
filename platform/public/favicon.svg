@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Vidra">
+  <rect width="32" height="32" rx="7" fill="#0E4F5C"></rect>
+  <rect x="11" y="4" width="10" height="4.5" rx="2.25" fill="#F2B33D"></rect>
+  <rect x="12" y="11" width="8" height="18" rx="4" fill="#FFFFFF"></rect>
+  <rect x="14" y="18" width="4" height="9" rx="2" fill="#F2B33D"></rect>
+</svg>

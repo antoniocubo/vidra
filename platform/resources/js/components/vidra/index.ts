@@ -16,6 +16,7 @@ export * from './empty-state';
 export * from './form-field';
 export * from './form-section';
 export * from './lab-switcher';
+export * from './logo';
 export * from './metric-card';
 export * from './page-header';
 export * from './person-row';

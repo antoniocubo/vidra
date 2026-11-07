@@ -1,16 +1,16 @@
-import { ProductBadge } from '@/components/vidra';
-import AppLogoIcon from './app-logo-icon';
+import { ProductBadge, VidraLogo, VidraSymbol } from '@/components/vidra';
 
+/** Logo no menu: palavra com o tubo no "i" e selo da linha; recolhido, só o tubo. */
 export default function AppLogo() {
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center">
-                <AppLogoIcon className="h-7 w-auto" />
-            </div>
-            <div className="ml-1 flex min-w-0 flex-1 items-center gap-2 text-left group-data-[collapsible=icon]:hidden">
-                <span className="font-display truncate text-xl leading-none font-bold tracking-tight">vidra</span>
+            <span className="hidden size-8 shrink-0 items-center justify-center group-data-[collapsible=icon]:flex">
+                <VidraSymbol className="h-7" />
+            </span>
+            <span className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:hidden">
+                <VidraLogo className="h-6" />
                 <ProductBadge line="pet" />
-            </div>
+            </span>
         </>
     );
 }
