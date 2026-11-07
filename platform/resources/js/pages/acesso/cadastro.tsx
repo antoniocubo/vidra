@@ -18,7 +18,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 
 type Plano = { value: string; nome: string; preco: number; pedidos: number; usuarios: number | null; unidades: number };
-type Props = { ufs: { value: string; nome: string }[]; planos: Plano[] };
+type Props = { ufs: { value: string; nome: string }[]; planos: Plano[]; planoInicial: string | null; cobrancaInicial: string | null };
 const inicial = {
     laboratorio_nome: '',
     cnpj: '',
@@ -54,11 +54,15 @@ const campos: Campo[][] = [
 const proximos = ['Continuar para o responsável técnico', 'Continuar para o seu acesso', 'Escolher o plano'];
 const numero = (valor: number) => valor.toLocaleString('pt-BR');
 
-export default function Cadastro({ ufs, planos }: Props) {
+export default function Cadastro({ ufs, planos, planoInicial, cobrancaInicial }: Props) {
     const [etapa, setEtapa] = useState(0);
     const form = useRef<HTMLFormElement>(null);
     const titulo = useRef<HTMLHeadingElement>(null);
-    const { data, setData, post, errors, processing, setError, clearErrors } = useForm(inicial);
+    const { data, setData, post, errors, processing, setError, clearErrors } = useForm({
+        ...inicial,
+        plano: planoInicial ?? inicial.plano,
+        cobranca: cobrancaInicial ?? inicial.cobranca,
+    });
     const forca =
         data.senha.length < 10
             ? 0

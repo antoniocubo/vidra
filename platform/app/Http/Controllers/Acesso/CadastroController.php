@@ -7,12 +7,14 @@ namespace App\Http\Controllers\Acesso;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Acesso\RegistrarLaboratorioRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Vidra\Acesso\Application\RegistrarLaboratorio\RegistrarLaboratorio;
 use Vidra\Acesso\Domain\CnpjJaCadastrado;
+use Vidra\Acesso\Domain\Cobranca;
 use Vidra\Acesso\Domain\EmailJaCadastrado;
 use Vidra\Acesso\Domain\Plano;
 use Vidra\Shared\Domain\DomainException;
@@ -20,14 +22,17 @@ use Vidra\Shared\Domain\ValueObjects\Uf;
 
 final class CadastroController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $plano = $request->query('plano');
+        $cobranca = $request->query('cobranca');
+
         return Inertia::render('acesso/cadastro', [
+            'planoInicial' => is_string($plano) ? Plano::tryFrom($plano)?->value : null,
+            'cobrancaInicial' => is_string($cobranca) ? Cobranca::tryFrom($cobranca)?->value : null,
             'ufs' => array_map(static fn (Uf $uf): array => ['value' => $uf->value, 'nome' => $uf->nome()], Uf::cases()),
             'planos' => array_map(static fn (Plano $plano): array => [
-                'value' => $plano->value, 'nome' => match ($plano) {
-                    Plano::Bancada => 'Bancada', Plano::Laboratorio => 'Laboratório', Plano::Rede => 'Rede'
-                },
+                'value' => $plano->value, 'nome' => $plano->nome(),
                 'preco' => $plano->precoEmCentavos(), 'pedidos' => $plano->pedidos(), 'usuarios' => $plano->usuarios(), 'unidades' => $plano->unidades(),
             ], Plano::cases()),
         ]);

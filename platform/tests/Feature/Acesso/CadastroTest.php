@@ -86,3 +86,21 @@ it('impede novo cadastro para quem já está autenticado', function (): void {
     $this->post(route('cadastro.store'), DadosCadastro::validos())->assertRedirect();
     $this->assertDatabaseCount('laboratorios', 0);
 });
+
+it('recebe o plano e a cobrança escolhidos na landing', function (): void {
+    $this->get(route('cadastro', ['plano' => 'rede', 'cobranca' => 'anual']))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('acesso/cadastro')
+        ->where('planoInicial', 'rede')
+        ->where('cobrancaInicial', 'anual'));
+});
+
+it('ignora plano e cobrança inválidos ou ausentes sem erro', function (array $parametros): void {
+    $this->get(route('cadastro', $parametros))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('acesso/cadastro')
+        ->where('planoInicial', null)
+        ->where('cobrancaInicial', null));
+})->with([
+    'inválidos' => [['plano' => 'inexistente', 'cobranca' => 'gratis']],
+    'ausentes' => [[]],
+    'listas inválidas' => [['plano' => ['rede'], 'cobranca' => ['anual']]],
+]);

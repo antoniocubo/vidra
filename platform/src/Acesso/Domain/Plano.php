@@ -10,6 +10,13 @@ enum Plano: string
     case Laboratorio = 'laboratorio';
     case Rede = 'rede';
 
+    public function nome(): string
+    {
+        return match ($this) {
+            self::Bancada => 'Bancada', self::Laboratorio => 'Laboratório', self::Rede => 'Rede'
+        };
+    }
+
     public function pedidos(): int
     {
         return match ($this) {

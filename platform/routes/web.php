@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Site\InicioController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', InicioController::class)->name('home');
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('dashboard', function () {
