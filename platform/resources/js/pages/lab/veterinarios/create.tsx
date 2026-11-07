@@ -52,7 +52,7 @@ export default function NovoVeterinario({ tratamentos, ufs }: Props) {
                         <FormField id="tratamento" label="Tratamento" error={errors.tratamento} className="w-32 shrink-0">
                             <Select
                                 value={data.tratamento}
-                                onChange={(e) => setData('tratamento', e.target.value)}
+                                onChange={(value) => setData('tratamento', value)}
                                 options={tratamentos.map((t) => ({ value: t, label: ROTULO_TRATAMENTO[t] ?? t }))}
                             />
                         </FormField>
@@ -73,7 +73,7 @@ export default function NovoVeterinario({ tratamentos, ufs }: Props) {
                         <FormField id="crmv_uf" label="UF" error={errors.crmv_uf} className="w-24 shrink-0">
                             <Select
                                 value={data.crmv_uf}
-                                onChange={(e) => setData('crmv_uf', e.target.value)}
+                                onChange={(value) => setData('crmv_uf', value)}
                                 options={ufs.map((uf) => ({ value: uf, label: uf }))}
                             />
                         </FormField>

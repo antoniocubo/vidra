@@ -23,7 +23,7 @@ final class CadastroController extends Controller
     public function create(): Response
     {
         return Inertia::render('acesso/cadastro', [
-            'ufs' => array_column(Uf::cases(), 'value'),
+            'ufs' => array_map(static fn (Uf $uf): array => ['value' => $uf->value, 'nome' => $uf->nome()], Uf::cases()),
             'planos' => array_map(static fn (Plano $plano): array => [
                 'value' => $plano->value, 'nome' => match ($plano) {
                     Plano::Bancada => 'Bancada', Plano::Laboratorio => 'Laboratório', Plano::Rede => 'Rede'

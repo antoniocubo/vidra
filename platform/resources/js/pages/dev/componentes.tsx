@@ -167,6 +167,8 @@ export default function VitrineDeComponentes() {
                     </div>
                 </Secao>
 
+                <SelectExamples />
+
                 <Secao id="formulario" title="2 · Formulário">
                     <FormSection title="Contato">
                         <FormField id="v-nome" label="Nome completo">
@@ -183,9 +185,6 @@ export default function VitrineDeComponentes() {
                         </FormField>
                         <FormField id="v-busca" label="Buscar tutor ou animal">
                             <TextInput icon={Search} placeholder="Telefone, CPF ou nome do animal" />
-                        </FormField>
-                        <FormField id="v-uf" label="UF">
-                            <Select options={['SP', 'MG', 'RJ'].map((uf) => ({ value: uf, label: uf }))} />
                         </FormField>
                         <FormField id="v-lab" label="Laboratório">
                             <TextInput disabled defaultValue="Laboratório Alfa Vet" />
@@ -430,5 +429,116 @@ export default function VitrineDeComponentes() {
                 </Secao>
             </main>
         </div>
+    );
+}
+
+const SELECT_UFS = [
+    ['AC', 'Acre'],
+    ['AL', 'Alagoas'],
+    ['AP', 'Amapá'],
+    ['AM', 'Amazonas'],
+    ['BA', 'Bahia'],
+    ['CE', 'Ceará'],
+    ['DF', 'Distrito Federal'],
+    ['ES', 'Espírito Santo'],
+    ['GO', 'Goiás'],
+    ['MA', 'Maranhão'],
+    ['MT', 'Mato Grosso'],
+    ['MS', 'Mato Grosso do Sul'],
+    ['MG', 'Minas Gerais'],
+    ['PA', 'Pará'],
+    ['PB', 'Paraíba'],
+    ['PR', 'Paraná'],
+    ['PE', 'Pernambuco'],
+    ['PI', 'Piauí'],
+    ['RJ', 'Rio de Janeiro'],
+    ['RN', 'Rio Grande do Norte'],
+    ['RS', 'Rio Grande do Sul'],
+    ['RO', 'Rondônia'],
+    ['RR', 'Roraima'],
+    ['SC', 'Santa Catarina'],
+    ['SP', 'São Paulo'],
+    ['SE', 'Sergipe'],
+    ['TO', 'Tocantins'],
+].map(([code, label]) => ({ value: code, code, label }));
+const SELECT_ESPECIES = ['Cão', 'Gato', 'Equino', 'Bovino', 'Ave', 'Silvestre'].map((label) => ({ value: label, label }));
+
+function SelectExamples() {
+    const [uf, setUf] = useState('PB');
+    const [especie, setEspecie] = useState('');
+    const [clinica, setClinica] = useState('vetcare');
+    const [vazio, setVazio] = useState('');
+    const [preenchido, setPreenchido] = useState('SP');
+    const [erro, setErro] = useState('');
+    const [cadastro, setCadastro] = useState(false);
+    const [nome, setNome] = useState('');
+    const [clinicas, setClinicas] = useState([
+        { value: 'vetcare', label: 'VetCare Jardins', description: 'Fatura mensal · fecha dia 5' },
+        { value: 'patas', label: 'Clínica Patas', description: 'Fatura mensal · fecha dia 10' },
+        { value: 'tutor', label: 'O tutor paga no balcão', description: 'Pix ou cartão na entrega da amostra' },
+        { value: 'inativa', label: 'Clínica inativa', description: 'Indisponível para novos pedidos', disabled: true },
+    ]);
+    return (
+        <Secao id="select" title="Select">
+            <p className="text-muted-foreground text-sm">
+                Busque por código ou nome da UF. Use as setas para navegar e Enter para escolher. No celular, a lista abre em uma folha.
+            </p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <FormField id="v-select-uf" label="UF" hint="Busca automática · 27 opções">
+                    <Select value={uf} onChange={setUf} name="uf" options={SELECT_UFS} searchable searchPlaceholder="Buscar UF ou estado" />
+                </FormField>
+                <FormField id="v-select-especie" label="Espécie" hint="Lista simples, sem busca">
+                    <Select value={especie} onChange={setEspecie} options={SELECT_ESPECIES} placeholder="Selecione a espécie" />
+                </FormField>
+                <FormField id="v-select-clinica" label="Clínica que paga">
+                    <Select
+                        value={clinica}
+                        onChange={setClinica}
+                        options={clinicas}
+                        footer={
+                            <Button variant="ghost" onClick={() => setCadastro(true)}>
+                                + Cadastrar outra clínica
+                            </Button>
+                        }
+                    />
+                </FormField>
+            </div>
+            {cadastro && (
+                <form
+                    className="flex flex-wrap items-end gap-3"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        if (!nome.trim()) return;
+                        const value = `clinica-${clinicas.length}`;
+                        setClinicas([...clinicas, { value, label: nome.trim(), description: 'Clínica de demonstração' }]);
+                        setClinica(value);
+                        setNome('');
+                        setCadastro(false);
+                    }}
+                >
+                    <FormField id="v-nova-clinica" label="Nome da clínica">
+                        <TextInput value={nome} onChange={(event) => setNome(event.target.value)} required />
+                    </FormField>
+                    <Button type="submit">Cadastrar clínica</Button>
+                    <Button variant="ghost" onClick={() => setCadastro(false)}>
+                        Cancelar
+                    </Button>
+                </form>
+            )}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <FormField id="v-select-vazio" label="UF · vazio">
+                    <Select value={vazio} onChange={setVazio} options={SELECT_UFS} />
+                </FormField>
+                <FormField id="v-select-preenchido" label="UF · preenchido">
+                    <Select value={preenchido} onChange={setPreenchido} options={SELECT_UFS} />
+                </FormField>
+                <FormField id="v-select-erro" label="UF · erro" error={!erro ? 'Escolha a UF.' : undefined}>
+                    <Select value={erro} onChange={setErro} options={SELECT_UFS} />
+                </FormField>
+                <FormField id="v-select-desabilitado" label="UF · desabilitado">
+                    <Select value="SP" onChange={() => {}} options={SELECT_UFS} disabled />
+                </FormField>
+            </div>
+        </Secao>
     );
 }

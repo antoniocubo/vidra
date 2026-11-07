@@ -18,7 +18,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 
 type Plano = { value: string; nome: string; preco: number; pedidos: number; usuarios: number | null; unidades: number };
-type Props = { ufs: string[]; planos: Plano[] };
+type Props = { ufs: { value: string; nome: string }[]; planos: Plano[] };
 const inicial = {
     laboratorio_nome: '',
     cnpj: '',
@@ -58,7 +58,7 @@ export default function Cadastro({ ufs, planos }: Props) {
     const [etapa, setEtapa] = useState(0);
     const form = useRef<HTMLFormElement>(null);
     const titulo = useRef<HTMLHeadingElement>(null);
-    const { data, setData, post, errors, processing } = useForm(inicial);
+    const { data, setData, post, errors, processing, setError, clearErrors } = useForm(inicial);
     const forca =
         data.senha.length < 10
             ? 0
@@ -76,6 +76,12 @@ export default function Cadastro({ ufs, planos }: Props) {
         event.preventDefault();
         if (etapa < 3) {
             if (!form.current?.reportValidity()) return;
+            const ufObrigatoria = etapa === 0 ? 'uf' : etapa === 1 ? 'rt_uf' : null;
+            if (ufObrigatoria && !data[ufObrigatoria]) {
+                setError(ufObrigatoria, 'Escolha a UF.');
+                document.getElementById(ufObrigatoria)?.focus();
+                return;
+            }
             if (etapa === 1 && data.sou_rt && !data.nome) setData('nome', data.rt_nome);
             mudarEtapa(etapa + 1);
             return;
@@ -111,10 +117,14 @@ export default function Cadastro({ ufs, planos }: Props) {
         <FormField id={nome} label="UF" error={errors[nome]}>
             <Select
                 name={nome}
-                required
+                aria-required="true"
                 value={data[nome]}
-                onChange={(event) => setData(nome, event.target.value)}
-                options={[{ value: '', label: 'Selecione' }, ...ufs.map((uf) => ({ value: uf, label: uf }))]}
+                onChange={(value) => {
+                    setData(nome, value);
+                    clearErrors(nome);
+                }}
+                options={ufs.map((uf) => ({ value: uf.value, code: uf.value, label: uf.nome }))}
+                searchPlaceholder="Buscar UF ou estado"
             />
         </FormField>
     );
