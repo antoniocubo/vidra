@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    # Só código do starter kit (auth e settings). Some quando a autenticação multi-laboratório for reescrita.
+    - phpstan-baseline.neon
+
+parameters:
+    level: 8
+    paths:
+        - app
+        - src
+        - routes
+        - database
+    excludePaths:
+        - database/factories

@@ -1,0 +1,218 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* Cores de status e de linha de produto, para usar como bg-ok-100, text-crit-600 etc. */
+    --color-ok-600: var(--vidra-ok-600);
+    --color-ok-100: var(--vidra-ok-100);
+    --color-warn-600: var(--vidra-warn-600);
+    --color-warn-100: var(--vidra-warn-100);
+    --color-crit-600: var(--vidra-crit-600);
+    --color-crit-100: var(--vidra-crit-100);
+    --color-accent-400: var(--vidra-accent-400);
+    --color-ink-on-accent: var(--vidra-ink-on-accent);
+    --color-pet-500: var(--vidra-pet-500);
+    --color-clinic-500: var(--vidra-clinic-500);
+    --color-brand-500: var(--vidra-brand-500);
+
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-border, currentColor);
+    }
+}
+
+:root {
+    /* Tokens da Vidra (design system: claude.ai/artifact/9qpRWRM4XzZpeVwWxdgjua) */
+    --vidra-glass-50: #f4f7f6;
+    --vidra-surface: #ffffff;
+    --vidra-ink-900: #1d2626;
+    --vidra-ink-500: #5a6766;
+    --vidra-line-200: #d8e0de;
+    --vidra-line-400: #7e8c8a;
+    --vidra-brand-900: #0e4f5c;
+    --vidra-on-brand: #ffffff;
+    --vidra-brand-500: #237784;
+    --vidra-brand-100: #e1eff1;
+    --vidra-accent-400: #f2b33d;
+    --vidra-ink-on-accent: #1d2626;
+    --vidra-pet-500: #ff7a59;
+    --vidra-clinic-500: #3d6bff;
+    --vidra-ok-600: #1f7a52;
+    --vidra-ok-100: #e3f4ec;
+    --vidra-warn-600: #8f6200;
+    --vidra-warn-100: #fbf0d6;
+    --vidra-crit-600: #b83232;
+    --vidra-crit-100: #fbe4e4;
+
+    /* Papéis do shadcn/ui apontando para os tokens */
+    --background: var(--vidra-glass-50);
+    --foreground: var(--vidra-ink-900);
+    --card: var(--vidra-surface);
+    --card-foreground: var(--vidra-ink-900);
+    --popover: var(--vidra-surface);
+    --popover-foreground: var(--vidra-ink-900);
+    --primary: var(--vidra-brand-900);
+    --primary-foreground: var(--vidra-on-brand);
+    --secondary: var(--vidra-brand-100);
+    --secondary-foreground: var(--vidra-brand-900);
+    --muted: var(--vidra-glass-50);
+    --muted-foreground: var(--vidra-ink-500);
+    --accent: var(--vidra-brand-100);
+    --accent-foreground: var(--vidra-brand-900);
+    --destructive: var(--vidra-crit-600);
+    --destructive-foreground: var(--vidra-on-brand);
+    --border: var(--vidra-line-200);
+    --input: var(--vidra-line-400);
+    --ring: var(--vidra-brand-500);
+    --chart-1: var(--vidra-brand-500);
+    --chart-2: var(--vidra-accent-400);
+    --chart-3: var(--vidra-pet-500);
+    --chart-4: var(--vidra-clinic-500);
+    --chart-5: var(--vidra-ok-600);
+    --radius: 0.5rem;
+    --sidebar-background: var(--vidra-brand-900);
+    --sidebar-foreground: var(--vidra-on-brand);
+    --sidebar-primary: var(--vidra-accent-400);
+    --sidebar-primary-foreground: var(--vidra-ink-on-accent);
+    --sidebar-border: var(--vidra-brand-900);
+    --sidebar-ring: var(--vidra-brand-500);
+    --sidebar-accent: rgb(255 255 255 / 0.14);
+    --sidebar-accent-foreground: var(--vidra-on-brand);
+}
+
+.dark {
+    /* Tokens da Vidra (design system: claude.ai/artifact/9qpRWRM4XzZpeVwWxdgjua) */
+    --vidra-glass-50: #0f1716;
+    --vidra-surface: #172221;
+    --vidra-ink-900: #e8efee;
+    --vidra-ink-500: #9aa9a7;
+    --vidra-line-200: #2a3836;
+    --vidra-line-400: #5c6e6b;
+    --vidra-brand-900: #6cc2ce;
+    --vidra-on-brand: #0b1a1c;
+    --vidra-brand-500: #7fd0db;
+    --vidra-brand-100: #163236;
+    --vidra-accent-400: #f2b33d;
+    --vidra-ink-on-accent: #1d2626;
+    --vidra-pet-500: #ff8f73;
+    --vidra-clinic-500: #7a97ff;
+    --vidra-ok-600: #5ccb98;
+    --vidra-ok-100: #16302a;
+    --vidra-warn-600: #f2b33d;
+    --vidra-warn-100: #33290f;
+    --vidra-crit-600: #ff7b7b;
+    --vidra-crit-100: #3a1a1a;
+
+    /* Papéis do shadcn/ui apontando para os tokens */
+    --background: var(--vidra-glass-50);
+    --foreground: var(--vidra-ink-900);
+    --card: var(--vidra-surface);
+    --card-foreground: var(--vidra-ink-900);
+    --popover: var(--vidra-surface);
+    --popover-foreground: var(--vidra-ink-900);
+    --primary: var(--vidra-brand-900);
+    --primary-foreground: var(--vidra-on-brand);
+    --secondary: var(--vidra-brand-100);
+    --secondary-foreground: var(--vidra-brand-900);
+    --muted: var(--vidra-glass-50);
+    --muted-foreground: var(--vidra-ink-500);
+    --accent: var(--vidra-brand-100);
+    --accent-foreground: var(--vidra-brand-900);
+    --destructive: var(--vidra-crit-600);
+    --destructive-foreground: var(--vidra-on-brand);
+    --border: var(--vidra-line-200);
+    --input: var(--vidra-line-400);
+    --ring: var(--vidra-brand-500);
+    --chart-1: var(--vidra-brand-500);
+    --chart-2: var(--vidra-accent-400);
+    --chart-3: var(--vidra-pet-500);
+    --chart-4: var(--vidra-clinic-500);
+    --chart-5: var(--vidra-ok-600);
+    --sidebar-background: var(--vidra-surface);
+    --sidebar-foreground: var(--vidra-ink-900);
+    --sidebar-primary: var(--vidra-brand-500);
+    --sidebar-primary-foreground: var(--vidra-on-brand);
+    --sidebar-border: var(--vidra-line-200);
+    --sidebar-ring: var(--vidra-brand-500);
+    --sidebar-accent: var(--vidra-brand-100);
+    --sidebar-accent-foreground: var(--vidra-ink-900);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
