@@ -138,6 +138,23 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 - Tokens da Vidra em `resources/css/app.css` como `--vidra-*`, ligados aos papéis do shadcn (`--primary`, `--border` etc.). Use as classes do Tailwind (`bg-primary`, `text-muted-foreground`, `bg-crit-100`, `text-ok-600`, `font-display`, `font-mono`), nunca cor em hex no componente.
 - Campos com 44px de altura no mínimo (`h-11`). Labels reais com `htmlFor`.
 
+## Delegar tarefas ao Codex CLI
+
+Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um componente, uma tela, um lote de arquivos) podem ir para o Codex CLI (`codex`, já instalado). O Claude escreve a instrução, roda o Codex, revisa o resultado e testa.
+
+- **Modelo:** use `-m gpt-6-astra`. A conta é do ChatGPT e recusa os outros modelos, inclusive o padrão do `~/.codex/config.toml` (`gpt-5.4`), com o erro "model is not supported when using Codex with a ChatGPT account". `gpt-5.6-terra` e `gpt-5.6-sol` também respondem. Para ver o catálogo: `codex debug models`.
+- **Comando** (da raiz do repositório, em segundo plano):
+
+  ```bash
+  codex exec -m gpt-6-astra -s workspace-write -C platform -o <saida>.md - < <instrucao>.md > <log>.txt 2>&1
+  ```
+
+  `-s workspace-write` deixa escrever só dentro de `platform/`; `-o` grava a resposta final; a instrução vai pela entrada padrão.
+- **A instrução deve trazer:** ler este `CLAUDE.md` antes de tudo; os arquivos exatos que pode criar ou editar (e que não mexa em outros); um arquivo já pronto como padrão a seguir (ex.: `components/vidra/button.tsx`); as regras de token de cor, acessibilidade e textos em português; não fazer commit; rodar `npx tsc --noEmit`, `npx eslint .`, `npx prettier --write resources/js`, `npm run build` e `php artisan test` até passar; responder com a lista de arquivos e as decisões diferentes do pedido.
+- **Vários lotes em paralelo** só quando os arquivos não se cruzam. Arquivos compartilhados (como `components/vidra/index.ts`) ficam para o Claude no fim.
+- **Depois do Codex, o Claude sempre:** lê o diff, corrige o que destoar do padrão, roda as checagens de novo e testa a tela no navegador (o Codex não testa interação). Só então faz o commit.
+- Se o Codex falhar por conta ou modelo, o plano B são subagentes do Claude num modelo mais barato (Sonnet), com a mesma instrução.
+
 ## Decisões de produto
 
 - **Segmento:** laboratórios veterinários primeiro (Vidra Pet); clínicos humanos na fase 3 (Vidra Clínica), no mesmo código.
