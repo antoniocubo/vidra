@@ -18,6 +18,12 @@ final class VeterinariaServiceProvider extends ServiceProvider
     public array $bindings = [
         VeterinarioRepository::class => EloquentVeterinarioRepository::class,
         VinculoRepository::class => EloquentVinculoRepository::class,
+        \Vidra\Veterinaria\Domain\Tutor\TutorRepository::class => Persistence\EloquentTutorRepository::class,
+        \Vidra\Veterinaria\Domain\Animal\AnimalRepository::class => Persistence\EloquentAnimalRepository::class,
+        \Vidra\Veterinaria\Domain\Tutor\AtendentesDoTutor::class => Persistence\EloquentAtendentesDoTutor::class,
+        \Vidra\Veterinaria\Domain\Vinculo\VinculosParaEscolha::class => EloquentVinculoRepository::class,
+        \Vidra\Veterinaria\Domain\Relogio::class => RelogioSistema::class,
+        \Vidra\Catalogo\Domain\Referencia\PerfisDeReferencia::class => Referencia\PerfisVeterinarios::class,
         Transacao::class => TransacaoEloquent::class,
     ];
 }

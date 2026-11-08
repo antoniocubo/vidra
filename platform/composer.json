@@ -71,14 +71,18 @@
             "pint"
         ],
         "test:postgres": [
+            "@php artisan config:clear --ansi",
             "@putenv DB_CONNECTION=pgsql",
             "@putenv DB_DATABASE=vidra_testes",
+            "@putenv DB_USERNAME=vidra",
+            "@putenv DB_PASSWORD=vidra",
+            "@putenv DB_SISTEMA_CONNECTION=pgsql",
+            "@php artisan test --exclude-group=postgres",
             "@putenv DB_USERNAME=vidra_app",
             "@putenv DB_PASSWORD=vidra_app",
             "@putenv DB_SISTEMA_CONNECTION=pgsql_sistema",
             "@putenv DB_SISTEMA_USERNAME=vidra",
             "@putenv DB_SISTEMA_PASSWORD=vidra",
-            "@php artisan config:clear --ansi",
             "@php artisan test --group=postgres"
         ]
     },
@@ -97,5 +101,8 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts-descriptions": {
+        "test:postgres": "Suíte inteira no Postgres (como dono, para checar o SQL) e depois os testes de RLS (como vidra_app)."
+    }
 }

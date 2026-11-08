@@ -27,7 +27,7 @@ composer install && npm install
 docker compose -f ../infra/docker-compose.yml up -d   # Postgres, Redis, Gotenberg, Mailpit
 composer dev            # servidor, fila, logs e Vite juntos
 php artisan test        # Pest: Unit, Feature e Arch (os de Postgres aparecem como pulados)
-composer test:postgres  # testes de RLS no Postgres do compose (banco vidra_testes)
+composer test:postgres  # suíte inteira no Postgres do compose + testes de RLS (banco vidra_testes)
 composer lint           # Pint (checagem) + PHPStan nível 8
 composer fix            # Pint corrigindo
 npm run types           # tsc --noEmit

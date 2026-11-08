@@ -16,7 +16,7 @@ import {
 export interface LabNavItem {
     title: string;
     icon: LucideIcon;
-    routeName: 'dashboard' | 'lab.veterinarios.create' | null;
+    routeName: 'dashboard' | 'lab.veterinarios.create' | 'lab.tutores.index' | 'lab.exames.index' | null;
 }
 
 export const labNavigation: LabNavItem[] = [
@@ -26,9 +26,9 @@ export const labNavigation: LabNavItem[] = [
     { title: 'Bancada', icon: FlaskConical, routeName: null },
     { title: 'Liberação', icon: FileCheck, routeName: null },
     { title: 'Laudos', icon: FileText, routeName: null },
-    { title: 'Tutores e animais', icon: PawPrint, routeName: null },
+    { title: 'Tutores e animais', icon: PawPrint, routeName: 'lab.tutores.index' },
     { title: 'Veterinários', icon: Stethoscope, routeName: 'lab.veterinarios.create' },
     { title: 'Clínicas', icon: Building2, routeName: null },
-    { title: 'Exames', icon: ListChecks, routeName: null },
+    { title: 'Exames', icon: ListChecks, routeName: 'lab.exames.index' },
     { title: 'Financeiro', icon: Wallet, routeName: null },
 ];
