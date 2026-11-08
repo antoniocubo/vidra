@@ -18,6 +18,8 @@ export type FormFieldProps = {
     /** Mensagem vinda do servidor (`errors.campo` do useForm). */
     error?: string;
     optional?: boolean;
+    /** Rótulo só para leitor de tela, quando o contexto visual já diz o que é (célula de tabela). */
+    hideLabel?: boolean;
     className?: string;
     children: ReactNode;
 };
@@ -26,13 +28,13 @@ export type FormFieldProps = {
  * Rótulo sempre visível acima do controle, ajuda ou erro abaixo.
  * O controle filho recebe id, aria-describedby e aria-invalid pelo contexto.
  */
-export function FormField({ id, label, hint, error, optional = false, className, children }: FormFieldProps) {
+export function FormField({ id, label, hint, error, optional = false, hideLabel = false, className, children }: FormFieldProps) {
     const messageId = error || hint ? `${id}-mensagem` : undefined;
 
     return (
         <FieldContext.Provider value={{ id, describedBy: messageId, invalid: Boolean(error) }}>
             <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
-                <label htmlFor={id} className="text-muted-foreground text-xs font-semibold">
+                <label htmlFor={id} className={cn('text-muted-foreground text-xs font-semibold', hideLabel && 'sr-only')}>
                     {label}
                     {optional && <span className="font-normal"> (opcional)</span>}
                 </label>

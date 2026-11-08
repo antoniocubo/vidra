@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Lab\VeterinarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
 | Portal do laboratório (app.vidralab.com.br). Quando o roteamento por subdomínio
 | entrar, este arquivo passa a ser carregado dentro de Route::domain().
+| Cada módulo tem o seu arquivo em routes/lab/.
 */
 
 Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): void {
-    Route::get('veterinarios/novo', [VeterinarioController::class, 'create'])->name('veterinarios.create');
-    Route::post('veterinarios', [VeterinarioController::class, 'store'])->name('veterinarios.store');
+    require __DIR__.'/lab/veterinaria.php';
+    require __DIR__.'/lab/catalogo.php';
 });

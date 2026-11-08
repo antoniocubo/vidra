@@ -180,6 +180,9 @@ export default function VitrineDeComponentes() {
                         <FormField id="v-cpf" label="CPF" optional hint="Só para nota fiscal.">
                             <TextInput mono placeholder="000.000.000-00" />
                         </FormField>
+                        <FormField id="v-min" label="Mínimo · Cão adulto (rótulo só para leitor de tela: hideLabel)" hideLabel>
+                            <TextInput mono inputMode="decimal" suffix="mg/dL" placeholder="0,5" />
+                        </FormField>
                         <FormField id="v-peso" label="Peso">
                             <TextInput mono defaultValue="12,4" suffix="kg" />
                         </FormField>

@@ -17,7 +17,7 @@ arch('o domínio compartilhado é puro')
 
 arch('o núcleo não conhece nenhuma linha de produto')
     // Ao criar um módulo do núcleo (Pedidos, Amostras, Bancada, Laudos...), inclua-o aqui.
-    ->expect(['Vidra\\Shared', 'Vidra\\Acesso'])
+    ->expect(['Vidra\\Shared', 'Vidra\\Acesso', 'Vidra\\Catalogo'])
     ->not->toUse(['Vidra\\Veterinaria', 'Vidra\\Humana']);
 
 arch('uma linha não usa a outra')
