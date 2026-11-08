@@ -17,6 +17,13 @@ final readonly class CodigoDeAcesso
         }
     }
 
+    public static function deEntrada(string $entrada): self
+    {
+        $codigo = strtoupper(str_replace('-', '', trim($entrada)));
+
+        return new self(substr($codigo, 0, 4).'-'.substr($codigo, 4));
+    }
+
     public static function gerar(): self
     {
         $v = '';

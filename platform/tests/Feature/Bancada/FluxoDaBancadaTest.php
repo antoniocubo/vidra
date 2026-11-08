@@ -15,6 +15,7 @@ use Vidra\Laudos\Infrastructure\Persistence\LaudoModel;
 use Vidra\Shared\Infrastructure\Tenancy\ContextoLaboratorio;
 
 beforeEach(function (): void {
+    Illuminate\Support\Facades\Queue::fake();
     $this->lab = Laboratorios::criar();
     $this->usuario = Laboratorios::usuarioEm($this->lab);
     $this->c = CenarioDeBancada::criar($this->lab);

@@ -8,6 +8,7 @@ return [
     | Endereços das superfícies do Vidra (cada uma num subdomínio).
     */
     'urls' => [
+        'laudo' => env('VIDRA_URL_LAUDO', 'https://laudo.vidralab.com.br'),
         'vet' => env('VIDRA_URL_VET', 'https://vet.vidralab.com.br'),
     ],
 

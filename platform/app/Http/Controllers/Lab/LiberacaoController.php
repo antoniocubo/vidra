@@ -47,6 +47,6 @@ final class LiberacaoController extends ResultadosController
     {
         $numero = $this->executar(fn () => $liberar($request->toInput($pedido)));
 
-        return to_route('lab.liberacao.index')->with('success', "Laudo {$numero} liberado.");
+        return to_route('lab.pedidos.show', ['pedido' => $pedido])->with('success', "Laudo {$numero} liberado.");
     }
 }

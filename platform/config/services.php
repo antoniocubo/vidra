@@ -16,6 +16,8 @@ return [
     |
     */
 
+    'gotenberg' => ['url' => env('GOTENBERG_URL', 'http://127.0.0.1:3001')],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

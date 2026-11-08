@@ -78,13 +78,14 @@ final class PedidoController extends Controller
             ->with('success', "Pedido {$aberto->protocolo} salvo.");
     }
 
-    public function show(Request $request, string $pedido, DetalharPedido $detalhar, \Vidra\Laudos\Application\LaudoDoPedido $laudo): Response
+    public function show(Request $request, string $pedido, DetalharPedido $detalhar, \Vidra\Laudos\Application\LaudoDoPedido $laudo, \Vidra\Laudos\Application\ConsultarEntrega $entrega): Response
     {
         $liberado = $laudo($pedido);
 
         return Inertia::render('lab/pedidos/show', [
             'pedido' => $this->executar(fn () => $detalhar($pedido)),
             'imprimir' => $request->boolean('imprimir'),
+            'entrega' => $entrega($pedido),
             'laudo' => $liberado === null ? null : [
                 'numero' => $liberado->numero, 'rt' => $liberado->rtNome,
                 'registro' => $liberado->rtRegistro, 'usuario' => $liberado->usuarioNome,

@@ -39,6 +39,13 @@ return [
             'throw' => false,
         ],
 
+        // PDFs dos laudos. Em produção vira S3 (sa-east-1).
+        'laudos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/laudos'),
+            'throw' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

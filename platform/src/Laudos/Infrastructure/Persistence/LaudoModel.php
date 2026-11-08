@@ -18,6 +18,9 @@ use Vidra\Shared\Infrastructure\Tenancy\PertenceAoLaboratorio;
  * @property string $rt_registro
  * @property \Illuminate\Support\Carbon $liberado_em
  * @property ?string $observacao
+ * @property ?string $pdf_caminho
+ * @property ?string $pdf_erro
+ * @property int $pdf_tentativas
  * @property string $codigo_acesso
  */
 final class LaudoModel extends Model

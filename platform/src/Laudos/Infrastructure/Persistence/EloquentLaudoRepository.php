@@ -33,7 +33,7 @@ final readonly class EloquentLaudoRepository implements LaudoRepository
 
     public function codigoExiste(CodigoDeAcesso $codigo): bool
     {
-        return LaudoModel::query()->where('codigo_acesso', $codigo->value)->exists();
+        return DB::connection(config()->string('vidra.conexao_sistema'))->table('laudos')->where('codigo_acesso', $codigo->value)->exists();
     }
 
     public function save(Laudo $l): void

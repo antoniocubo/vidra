@@ -1,6 +1,6 @@
 import { Alert, Button, Card, DataTable, DetailList, PageHeader, StatusBadge, StatusStepper, Toast, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
 import { useEffect } from 'react';
 import { reais, tomDaSituacao } from './formato';
@@ -24,6 +24,7 @@ type Pedido = {
 type Props = {
     pedido: Pedido;
     imprimir: boolean;
+    entrega: { pdfPronto: boolean; pdfErro: string | null; whatsapp: string | null; link: string; entregas: string[] } | null;
     laudo: { numero: string; rt: string; registro: string; usuario: string; quando: string; codigo: string } | null;
 };
 type Etapa = 'done' | 'current' | 'todo';
@@ -39,7 +40,7 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
     rejeitada: { rotulo: 'Rejeitada', tom: 'crit' },
 };
 
-export default function Pedido({ pedido, imprimir, laudo }: Props) {
+export default function Pedido({ pedido, imprimir, laudo, entrega }: Props) {
     const flash = useFlashToast();
     const etiquetas = route('lab.pedidos.etiquetas', { pedido: pedido.id });
 
@@ -145,6 +146,61 @@ export default function Pedido({ pedido, imprimir, laudo }: Props) {
                                 { term: 'Código de acesso', value: laudo.codigo, mono: true },
                             ]}
                         />
+                        {entrega && (
+                            <div className="mt-5 space-y-4">
+                                {entrega.pdfErro ? (
+                                    <Alert tone="warn" title="Não foi possível gerar o PDF">
+                                        A entrega será tentada novamente. Se o problema continuar, consulte o suporte.
+                                    </Alert>
+                                ) : (
+                                    !entrega.pdfPronto && (
+                                        <p role="status" className="text-muted-foreground text-sm">
+                                            Gerando o PDF… Recarregue para consultar o andamento.
+                                        </p>
+                                    )
+                                )}
+                                <div className="flex flex-wrap gap-3">
+                                    {entrega.pdfPronto && (
+                                        <Button asChild>
+                                            <a href={route('lab.pedidos.laudo.pdf', { pedido: pedido.id })}>Baixar o laudo em PDF</a>
+                                        </Button>
+                                    )}
+                                    {entrega.whatsapp && (
+                                        <Button variant="secondary" asChild>
+                                            <a href={entrega.whatsapp} target="_blank" rel="noopener noreferrer">
+                                                Compartilhar no WhatsApp
+                                            </a>
+                                        </Button>
+                                    )}
+                                    {/* Sem PDF pronto, o mesmo botão refaz a entrega completa: o laudo nunca fica preso. */}
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() =>
+                                            router.post(route('lab.pedidos.laudo.reenviar', { pedido: pedido.id }), {}, { preserveScroll: true })
+                                        }
+                                    >
+                                        {entrega.pdfPronto ? 'Reenviar e-mail' : 'Gerar PDF e enviar de novo'}
+                                    </Button>
+                                    {!entrega.pdfPronto && (
+                                        <Button variant="ghost" onClick={() => router.reload({ only: ['entrega'] })}>
+                                            Atualizar andamento
+                                        </Button>
+                                    )}
+                                </div>
+                                <a href={entrega.link} className="text-brand-500 text-sm underline" target="_blank" rel="noopener noreferrer">
+                                    Ver link de acesso
+                                </a>
+                                {entrega.entregas.length > 0 && (
+                                    <ul className="text-muted-foreground space-y-2 text-sm">
+                                        {entrega.entregas.map((texto, i) => (
+                                            <li key={i} className="break-words">
+                                                {texto}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
                     </Card>
                 )}
                 <Card title="Exames">
