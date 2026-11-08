@@ -10,6 +10,7 @@ namespace Vidra\Veterinaria\Application\RegistrarVeterinario;
  */
 final readonly class RegistrarVeterinarioInput
 {
+    /** @param list<string> $clinicaIds clínicas onde atende, já cadastradas no laboratório */
     public function __construct(
         public string $tratamento,
         public string $nome,
@@ -22,5 +23,6 @@ final readonly class RegistrarVeterinarioInput
         public string $recebeLaudo,
         public bool $vePedidosDosColegas,
         public ?string $especialidade = null,
+        public array $clinicaIds = [],
     ) {}
 }

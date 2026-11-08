@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vidra\Acesso\Application\RegistrarLaboratorio;
 
 use Vidra\Acesso\Domain\Administrador;
-use Vidra\Acesso\Domain\Cnpj;
 use Vidra\Acesso\Domain\CnpjJaCadastrado;
 use Vidra\Acesso\Domain\Cobranca;
 use Vidra\Acesso\Domain\EmailJaCadastrado;
@@ -18,6 +17,7 @@ use Vidra\Acesso\Domain\Plano;
 use Vidra\Acesso\Domain\RegistroProfissional;
 use Vidra\Acesso\Domain\Relogio;
 use Vidra\Acesso\Domain\ResponsavelTecnico;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\Email;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 use Vidra\Shared\Domain\ValueObjects\Telefone;

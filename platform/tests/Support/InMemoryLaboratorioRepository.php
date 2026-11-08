@@ -6,10 +6,10 @@ namespace Tests\Support;
 
 use Illuminate\Support\Str;
 use Vidra\Acesso\Domain\Administrador;
-use Vidra\Acesso\Domain\Cnpj;
 use Vidra\Acesso\Domain\Laboratorio;
 use Vidra\Acesso\Domain\LaboratorioId;
 use Vidra\Acesso\Domain\LaboratorioRepository;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\Email;
 
 final class InMemoryLaboratorioRepository implements LaboratorioRepository

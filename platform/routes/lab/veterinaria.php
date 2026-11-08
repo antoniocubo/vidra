@@ -2,13 +2,25 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Lab\ClinicaController;
 use App\Http\Controllers\Lab\VeterinarioController;
 use Illuminate\Support\Facades\Route;
 
 /* Linha Pet: veterinários, tutores, animais e clínicas. Carregado dentro do grupo de routes/lab.php. */
 
+Route::get('veterinarios', [VeterinarioController::class, 'index'])->name('veterinarios.index');
 Route::get('veterinarios/novo', [VeterinarioController::class, 'create'])->name('veterinarios.create');
 Route::post('veterinarios', [VeterinarioController::class, 'store'])->name('veterinarios.store');
+Route::get('veterinarios/{vinculo}/editar', [VeterinarioController::class, 'edit'])->whereUuid('vinculo')->name('veterinarios.edit');
+Route::put('veterinarios/{vinculo}/editar', [VeterinarioController::class, 'update'])->whereUuid('vinculo')->name('veterinarios.update');
+
+Route::get('clinicas', [ClinicaController::class, 'index'])->name('clinicas.index');
+Route::get('clinicas/nova', [ClinicaController::class, 'create'])->name('clinicas.create');
+Route::post('clinicas', [ClinicaController::class, 'store'])->name('clinicas.store');
+Route::get('clinicas/{clinica}/editar', [ClinicaController::class, 'edit'])->whereUuid('clinica')->name('clinicas.edit');
+Route::put('clinicas/{clinica}/editar', [ClinicaController::class, 'update'])->whereUuid('clinica')->name('clinicas.update');
+Route::post('clinicas/{clinica}/desativar', [ClinicaController::class, 'desativar'])->whereUuid('clinica')->name('clinicas.desativar');
+Route::post('clinicas/{clinica}/reativar', [ClinicaController::class, 'reativar'])->whereUuid('clinica')->name('clinicas.reativar');
 
 Route::get('tutores', [App\Http\Controllers\Lab\TutorController::class, 'index'])->name('tutores.index');
 Route::get('tutores/novo', [App\Http\Controllers\Lab\TutorController::class, 'create'])->name('tutores.create');

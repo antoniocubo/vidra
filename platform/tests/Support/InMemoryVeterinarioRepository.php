@@ -35,4 +35,9 @@ final class InMemoryVeterinarioRepository implements VeterinarioRepository
 
         return null;
     }
+
+    public function porIds(array $ids): array
+    {
+        return array_intersect_key($this->items, array_flip($ids));
+    }
 }

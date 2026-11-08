@@ -6,6 +6,7 @@ namespace Vidra\Acesso\Domain;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 use Vidra\Shared\Domain\ValueObjects\Telefone;
 

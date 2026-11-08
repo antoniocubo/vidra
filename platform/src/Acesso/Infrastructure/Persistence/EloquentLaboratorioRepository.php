@@ -9,12 +9,12 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Vidra\Acesso\Domain\Administrador;
-use Vidra\Acesso\Domain\Cnpj;
 use Vidra\Acesso\Domain\CnpjJaCadastrado;
 use Vidra\Acesso\Domain\EmailJaCadastrado;
 use Vidra\Acesso\Domain\Laboratorio;
 use Vidra\Acesso\Domain\LaboratorioId;
 use Vidra\Acesso\Domain\LaboratorioRepository;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\Email;
 
 final class EloquentLaboratorioRepository implements LaboratorioRepository

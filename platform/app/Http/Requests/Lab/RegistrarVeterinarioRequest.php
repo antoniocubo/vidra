@@ -15,6 +15,8 @@ use Vidra\Veterinaria\Domain\Veterinario\Tratamento;
  */
 final class RegistrarVeterinarioRequest extends FormRequest
 {
+    use DadosVinculoRequest;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -25,11 +27,8 @@ final class RegistrarVeterinarioRequest extends FormRequest
             'crmv_uf' => ['required', Rule::enum(Uf::class)],
             'email' => ['required', 'email', 'max:255'],
             'celular' => ['required', 'string', 'max:20'],
-            'telefone_critico' => ['required', 'string', 'max:20'],
-            'quem_paga' => ['required', 'in:clinica,veterinario,tutor'],
-            'recebe_laudo' => ['required', 'in:cada_laudo,resumo_diario'],
-            've_pedidos_dos_colegas' => ['required', 'boolean'],
             'especialidade' => ['nullable', 'string', 'max:120'],
+            ...$this->regrasDoVinculo(),
         ];
     }
 
@@ -47,6 +46,7 @@ final class RegistrarVeterinarioRequest extends FormRequest
             recebeLaudo: $this->string('recebe_laudo')->value(),
             vePedidosDosColegas: $this->boolean('ve_pedidos_dos_colegas'),
             especialidade: $this->filled('especialidade') ? $this->string('especialidade')->value() : null,
+            clinicaIds: $this->clinicaIds(),
         );
     }
 }

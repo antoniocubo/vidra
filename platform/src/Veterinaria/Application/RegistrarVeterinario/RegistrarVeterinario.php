@@ -9,6 +9,8 @@ use Vidra\Shared\Domain\Transacao;
 use Vidra\Shared\Domain\ValueObjects\Email;
 use Vidra\Shared\Domain\ValueObjects\Telefone;
 use Vidra\Shared\Domain\ValueObjects\Uf;
+use Vidra\Veterinaria\Domain\Clinica\ClinicaRepository;
+use Vidra\Veterinaria\Domain\Clinica\Exceptions\ClinicaNaoEncontrada;
 use Vidra\Veterinaria\Domain\Veterinario\Crmv;
 use Vidra\Veterinaria\Domain\Veterinario\Tratamento;
 use Vidra\Veterinaria\Domain\Veterinario\Veterinario;
@@ -26,12 +28,17 @@ final readonly class RegistrarVeterinario
         private LaboratorioAtual $laboratorio,
         private VinculoRepository $vinculos,
         private Transacao $transacao,
+        private ClinicaRepository $clinicas,
     ) {}
 
     public function __invoke(RegistrarVeterinarioInput $input): RegistrarVeterinarioResultado
     {
         return $this->transacao->executar(function () use ($input): RegistrarVeterinarioResultado {
             $laboratorioId = $this->laboratorio->id();
+            $clinicaIds = array_values(array_unique($input->clinicaIds));
+            if (count($this->clinicas->porIds($clinicaIds)) !== count($clinicaIds)) {
+                throw ClinicaNaoEncontrada::para();
+            }
             $crmv = new Crmv($input->crmvNumero, Uf::from($input->crmvUf));
             $veterinario = $this->veterinarios->findByCrmv($crmv);
             $reaproveitado = $veterinario !== null;
@@ -53,7 +60,7 @@ final readonly class RegistrarVeterinario
                 $this->veterinarios->save($veterinario);
             }
 
-            $this->vinculos->save(Vinculo::registrar(
+            $vinculo = Vinculo::registrar(
                 id: $this->vinculos->nextIdentity(),
                 laboratorioId: $laboratorioId,
                 veterinarioId: $veterinario->id,
@@ -61,9 +68,11 @@ final readonly class RegistrarVeterinario
                 telefoneCritico: new Telefone($input->telefoneCritico),
                 vePedidosDosColegas: $input->vePedidosDosColegas,
                 recebeLaudo: RecebeLaudo::from($input->recebeLaudo),
-            ));
+                clinicaIds: $clinicaIds,
+            );
+            $this->vinculos->save($vinculo);
 
-            return new RegistrarVeterinarioResultado($veterinario->id, $reaproveitado, $veterinario->nomeDeExibicao());
+            return new RegistrarVeterinarioResultado($veterinario->id, $reaproveitado, $veterinario->nomeDeExibicao(), $vinculo->id);
         });
     }
 }

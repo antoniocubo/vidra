@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use Illuminate\Support\Str;
 use Vidra\Shared\Domain\Tenancy\LaboratorioAtual;
+use Vidra\Veterinaria\Domain\Clinica\ClinicaId;
 use Vidra\Veterinaria\Domain\Veterinario\VeterinarioId;
 use Vidra\Veterinaria\Domain\Vinculo\Vinculo;
 use Vidra\Veterinaria\Domain\Vinculo\VinculoId;
@@ -37,5 +38,22 @@ final class InMemoryVinculoRepository implements VinculoRepository
         }
 
         return false;
+    }
+
+    public function porId(VinculoId $id): ?Vinculo
+    {
+        $vinculo = $this->items[$id->value] ?? null;
+
+        return $vinculo !== null && $vinculo->laboratorioId === $this->laboratorio->id() ? $vinculo : null;
+    }
+
+    public function todos(): array
+    {
+        return array_values(array_filter($this->items, fn (Vinculo $v): bool => $v->laboratorioId === $this->laboratorio->id()));
+    }
+
+    public function daClinica(ClinicaId $clinicaId): array
+    {
+        return array_values(array_filter($this->todos(), fn (Vinculo $v): bool => $v->atendeEm($clinicaId->value)));
     }
 }

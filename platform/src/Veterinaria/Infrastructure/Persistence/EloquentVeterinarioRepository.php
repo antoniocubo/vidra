@@ -47,6 +47,16 @@ final class EloquentVeterinarioRepository implements VeterinarioRepository
         return $model === null ? null : $this->toEntity($model);
     }
 
+    public function porIds(array $ids): array
+    {
+        $veterinarios = [];
+        foreach (VeterinarioModel::query()->whereIn('id', $ids)->get() as $model) {
+            $veterinarios[$model->id] = $this->toEntity($model);
+        }
+
+        return $veterinarios;
+    }
+
     private function toEntity(VeterinarioModel $model): Veterinario
     {
         return Veterinario::restaurar(

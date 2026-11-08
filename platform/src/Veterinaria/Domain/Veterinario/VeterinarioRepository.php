@@ -11,4 +11,10 @@ interface VeterinarioRepository
     public function save(Veterinario $veterinario): void;
 
     public function findByCrmv(Crmv $crmv): ?Veterinario;
+
+    /**
+     * @param  list<string>  $ids
+     * @return array<string, Veterinario> indexados pelo id
+     */
+    public function porIds(array $ids): array;
 }

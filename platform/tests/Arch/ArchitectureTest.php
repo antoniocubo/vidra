@@ -44,7 +44,7 @@ arch('adaptadores de infraestrutura são classes finais')
     ->toBeFinal();
 
 arch('repositórios do domínio são só contratos')
-    ->expect(['Vidra\\Veterinaria\\Domain\\Veterinario\\VeterinarioRepository', 'Vidra\\Acesso\\Domain\\LaboratorioRepository', 'Vidra\\Veterinaria\\Domain\\Vinculo\\VinculoRepository'])
+    ->expect(['Vidra\\Veterinaria\\Domain\\Veterinario\\VeterinarioRepository', 'Vidra\\Acesso\\Domain\\LaboratorioRepository', 'Vidra\\Veterinaria\\Domain\\Vinculo\\VinculoRepository', 'Vidra\\Veterinaria\\Domain\\Clinica\\ClinicaRepository'])
     ->toBeInterface();
 
 arch('controllers não usam Eloquent direto')

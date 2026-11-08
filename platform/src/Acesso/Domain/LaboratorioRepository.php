@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Acesso\Domain;
 
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\Email;
 
 interface LaboratorioRepository

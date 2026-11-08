@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vidra\Acesso\Domain;
-
-use Vidra\Shared\Domain\ValueObjects\InvalidValue;
+namespace Vidra\Shared\Domain\ValueObjects;
 
 final readonly class Cnpj
 {
@@ -27,5 +25,11 @@ final readonly class Cnpj
             }
         }
         $this->value = $digits;
+    }
+
+    /** Formato de exibição: 11.222.333/0001-81. */
+    public function formatted(): string
+    {
+        return preg_replace('/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/', '$1.$2.$3/$4-$5', $this->value) ?? $this->value;
     }
 }

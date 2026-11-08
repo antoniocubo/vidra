@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Vidra\Acesso\Domain\Cnpj;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 
 it('normaliza o CNPJ com pontuação', function (): void {

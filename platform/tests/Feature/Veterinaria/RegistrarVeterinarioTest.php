@@ -34,7 +34,7 @@ it('mostra o formulário de cadastro', function (): void {
 it('cadastra um veterinário', function (): void {
     actingAs(Laboratorios::usuario())
         ->post(route('lab.veterinarios.store'), payload())
-        ->assertRedirect(route('lab.veterinarios.create'));
+        ->assertRedirect(route('lab.veterinarios.index', ['veterinario' => Illuminate\Support\Facades\DB::table('laboratorio_veterinario')->value('id')]));
 
     assertDatabaseHas('veterinarios', [
         'crmv_uf' => 'SP',

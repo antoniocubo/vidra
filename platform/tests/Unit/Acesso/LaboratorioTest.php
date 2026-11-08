@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Vidra\Acesso\Domain\Cnpj;
 use Vidra\Acesso\Domain\Cobranca;
 use Vidra\Acesso\Domain\Endereco;
 use Vidra\Acesso\Domain\Laboratorio;
@@ -11,6 +10,7 @@ use Vidra\Acesso\Domain\LinhaDeProduto;
 use Vidra\Acesso\Domain\Plano;
 use Vidra\Acesso\Domain\RegistroProfissional;
 use Vidra\Acesso\Domain\ResponsavelTecnico;
+use Vidra\Shared\Domain\ValueObjects\Cnpj;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 use Vidra\Shared\Domain\ValueObjects\Telefone;
 use Vidra\Shared\Domain\ValueObjects\Uf;

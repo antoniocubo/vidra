@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\InMemoryClinicaRepository;
 use Tests\Support\InMemoryVeterinarioRepository;
 use Tests\Support\InMemoryVinculoRepository;
 use Tests\Support\LaboratorioAtualFixo;
@@ -31,7 +32,7 @@ beforeEach(function (): void {
     $this->repo = new InMemoryVeterinarioRepository;
     $this->laboratorio = new LaboratorioAtualFixo;
     $this->vinculos = new InMemoryVinculoRepository($this->laboratorio);
-    $this->registrar = new RegistrarVeterinario($this->repo, $this->laboratorio, $this->vinculos, new TransacaoEmMemoria);
+    $this->registrar = new RegistrarVeterinario($this->repo, $this->laboratorio, $this->vinculos, new TransacaoEmMemoria, new InMemoryClinicaRepository($this->laboratorio));
 });
 
 it('registra o veterinário com dados normalizados', function (): void {
@@ -59,7 +60,7 @@ it('reaproveita o CRMV de outro laboratório sem alterar os dados globais', func
     $original = $this->repo->items[$primeiro->id->value];
     $outroLaboratorio = new LaboratorioAtualFixo('019a5d70-0000-7000-8000-000000000002');
     $outrosVinculos = new InMemoryVinculoRepository($outroLaboratorio);
-    $registrar = new RegistrarVeterinario($this->repo, $outroLaboratorio, $outrosVinculos, new TransacaoEmMemoria);
+    $registrar = new RegistrarVeterinario($this->repo, $outroLaboratorio, $outrosVinculos, new TransacaoEmMemoria, new InMemoryClinicaRepository($outroLaboratorio));
     $resultado = $registrar(new RegistrarVeterinarioInput('dr', 'Outro Nome', '055912', 'SP', 'outro@exemplo.com', '11999998888', '11988887777', 'tutor', 'resumo_diario', true));
     expect($resultado->reaproveitado)->toBeTrue()
         ->and($resultado->id)->toEqual($primeiro->id)
