@@ -21,7 +21,6 @@ final class Veterinario
         public readonly Crmv $crmv,
         private Email $email,
         private Telefone $celular,
-        private Telefone $telefoneCritico,
         private ?string $especialidade,
     ) {}
 
@@ -32,7 +31,6 @@ final class Veterinario
         Crmv $crmv,
         Email $email,
         Telefone $celular,
-        Telefone $telefoneCritico,
         ?string $especialidade = null,
     ): self {
         return new self(
@@ -42,7 +40,6 @@ final class Veterinario
             $crmv,
             $email,
             $celular,
-            $telefoneCritico,
             self::normalizarOpcional($especialidade),
         );
     }
@@ -55,10 +52,9 @@ final class Veterinario
         Crmv $crmv,
         Email $email,
         Telefone $celular,
-        Telefone $telefoneCritico,
         ?string $especialidade,
     ): self {
-        return new self($id, $tratamento, $nome, $crmv, $email, $celular, $telefoneCritico, $especialidade);
+        return new self($id, $tratamento, $nome, $crmv, $email, $celular, $especialidade);
     }
 
     /** Nome como sai no laudo: "Dra. Beatriz Nogueira". */
@@ -85,11 +81,6 @@ final class Veterinario
     public function celular(): Telefone
     {
         return $this->celular;
-    }
-
-    public function telefoneCritico(): Telefone
-    {
-        return $this->telefoneCritico;
     }
 
     public function especialidade(): ?string

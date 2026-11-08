@@ -69,6 +69,17 @@
         ],
         "fix": [
             "pint"
+        ],
+        "test:postgres": [
+            "@putenv DB_CONNECTION=pgsql",
+            "@putenv DB_DATABASE=vidra_testes",
+            "@putenv DB_USERNAME=vidra_app",
+            "@putenv DB_PASSWORD=vidra_app",
+            "@putenv DB_SISTEMA_CONNECTION=pgsql_sistema",
+            "@putenv DB_SISTEMA_USERNAME=vidra",
+            "@putenv DB_SISTEMA_PASSWORD=vidra",
+            "@php artisan config:clear --ansi",
+            "@php artisan test --group=postgres"
         ]
     },
     "extra": {

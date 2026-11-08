@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Vidra\Acesso\Domain\LaboratorioDoUsuario;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -47,9 +48,20 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // Preenchidos pelo middleware 'laboratorio'; nas telas públicas ficam nulos.
+            'laboratorio' => fn (): ?array => $this->laboratorio($request->attributes->get('laboratorio')),
+            'laboratorios' => fn (): array => array_values(array_filter(array_map($this->laboratorio(...), (array) $request->attributes->get('laboratorios', [])))),
             'flash' => [
                 'success' => fn (): ?string => $request->session()->get('success'),
             ],
         ]);
+    }
+
+    /** @return array{id: string, nome: string, papel: string}|null */
+    private function laboratorio(mixed $laboratorio): ?array
+    {
+        return $laboratorio instanceof LaboratorioDoUsuario
+            ? ['id' => $laboratorio->id->value, 'nome' => $laboratorio->nome, 'papel' => $laboratorio->papel]
+            : null;
     }
 }

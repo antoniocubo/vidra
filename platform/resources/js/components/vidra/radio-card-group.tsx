@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { type ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 export type RadioCardOption<T extends string> = { value: T; label: string; description?: ReactNode; disabled?: boolean };
 
@@ -15,6 +15,7 @@ export type RadioCardGroupProps<T extends string> = {
 
 /** Escolha de uma opção entre poucas, em cartões com título e descrição. */
 export function RadioCardGroup<T extends string>({ name, value, onChange, options, label, className }: RadioCardGroupProps<T>) {
+    const id = useId();
     return (
         <fieldset className={cn('min-w-0', className)}>
             <legend className="text-muted-foreground mb-1.5 text-xs font-semibold">{label}</legend>
@@ -25,6 +26,7 @@ export function RadioCardGroup<T extends string>({ name, value, onChange, option
                     return (
                         <label
                             key={option.value}
+                            htmlFor={`${id}-${option.value}`}
                             className={cn(
                                 'has-focus-visible:outline-brand-500 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg p-4 has-focus-visible:outline-2 has-focus-visible:outline-offset-2',
                                 option.disabled && 'cursor-not-allowed opacity-45',
@@ -32,6 +34,7 @@ export function RadioCardGroup<T extends string>({ name, value, onChange, option
                             )}
                         >
                             <input
+                                id={`${id}-${option.value}`}
                                 type="radio"
                                 disabled={option.disabled}
                                 name={name}

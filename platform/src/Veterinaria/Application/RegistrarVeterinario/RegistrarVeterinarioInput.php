@@ -18,6 +18,9 @@ final readonly class RegistrarVeterinarioInput
         public string $email,
         public string $celular,
         public string $telefoneCritico,
+        public string $quemPaga,
+        public string $recebeLaudo,
+        public bool $vePedidosDosColegas,
         public ?string $especialidade = null,
     ) {}
 }

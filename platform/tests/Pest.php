@@ -17,6 +17,11 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
+// Testes que dependem do Postgres (RLS). Rodam com: composer test:postgres
+pest()->extend(Tests\TestCase::class)
+    ->group('postgres')
+    ->in('Postgres');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

@@ -26,7 +26,8 @@ vidra-app/
 composer install && npm install
 docker compose -f ../infra/docker-compose.yml up -d   # Postgres, Redis, Gotenberg, Mailpit
 composer dev            # servidor, fila, logs e Vite juntos
-php artisan test        # Pest: Unit, Feature e Arch
+php artisan test        # Pest: Unit, Feature e Arch (os de Postgres aparecem como pulados)
+composer test:postgres  # testes de RLS no Postgres do compose (banco vidra_testes)
 composer lint           # Pint (checagem) + PHPStan nível 8
 composer fix            # Pint corrigindo
 npm run types           # tsc --noEmit
@@ -36,7 +37,9 @@ npm run format          # Prettier
 
 Antes de dar uma tarefa por concluída: `php artisan test`, `composer lint`, `npm run types` e `npm run lint:check` passando.
 
-O `.env` local usa SQLite para subir sem Docker. O `.env.example` aponta para o Postgres do compose. Produção é sempre Postgres 17: RLS e alguns índices dependem dele, então teste no Postgres o que tocar em tenancy.
+O `.env` local usa SQLite para subir sem Docker. O `.env.example` aponta para o Postgres do compose. Produção é sempre Postgres 17: RLS e alguns índices dependem dele, então rode `composer test:postgres` em tudo que tocar em tenancy.
+
+No Postgres há dois usuários (criados por `infra/postgres/01-vidra-app.sql`): `vidra_app`, com que a aplicação entra e que obedece ao RLS, e `vidra`, dono das tabelas, usado nas migrations (`php artisan migrate --database=pgsql_sistema`) e pela conexão de sistema. Se a porta 5432 estiver ocupada, suba o compose com `VIDRA_PG_PORT=5435` e use `DB_PORT=5435`.
 
 ## Arquitetura: clean architecture
 
@@ -103,6 +106,7 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 | FormRequest | `RegistrarVeterinarioRequest` | valida formato e tem `toInput()` |
 | Controller | `VeterinarioController` | fino: request → caso de uso → resposta; traduz `DomainException` em `ValidationException` |
 | Binding | `VeterinariaServiceProvider` | um provider por módulo, registrado em `bootstrap/providers.php` |
+| Dado de laboratório | `VinculoModel` | tabela com `laboratorio_id` + `Rls::isolarPorLaboratorio()` na migration; model com `use PertenceAoLaboratorio`; caso de uso recebe `LaboratorioAtual` |
 
 ### Clean code
 
@@ -176,7 +180,12 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
 ## Decisões técnicas
 
 - PHP 8.4, Laravel 12, Inertia 2, React 19, TypeScript, Tailwind 4, shadcn/ui.
-- PostgreSQL 17. **Multi-tenant por `laboratorio_id`** com global scope no Eloquent **e** Row Level Security no Postgres (defesa em dupla). Ainda não implementado: o `Veterinario` é global e o vínculo com o laboratório é o próximo passo.
+- PostgreSQL 17. **Multi-tenant por `laboratorio_id`**, em defesa dupla:
+  - **Laboratório atual:** o middleware `laboratorio` (`DefinirLaboratorioAtual`) lê o escolhido da sessão, confere o vínculo em `laboratorio_usuario` a cada requisição e define `ContextoLaboratorio`. O domínio enxerga só a interface `Vidra\Shared\Domain\Tenancy\LaboratorioAtual`. Jobs e comandos usam `ContextoLaboratorio::executarComo()`.
+  - **Eloquent:** o trait `PertenceAoLaboratorio` filtra toda consulta e preenche o `laboratorio_id`. Sem laboratório definido, lança `LaboratorioNaoDefinido` em vez de devolver tudo.
+  - **Postgres:** `Rls::isolarPorLaboratorio()` liga RLS com `FORCE` e uma policy que compara com `app.laboratorio_id` (definido pelo `ContextoLaboratorio`). Um teste falha se alguma tabela com `laboratorio_id` ficar sem RLS.
+  - **Global, sem RLS:** `users`, `laboratorios`, `veterinarios` (a pessoa) e `laboratorio_usuario` (o mapa de acessos). O que cruza laboratórios (lista de acessos, link do tutor, fatura mensal) usa só a conexão `config('vidra.conexao_sistema')`.
+  - Tutor e animal são cadastros de cada laboratório.
 - IDs UUID v7 gerados pelo repositório (`nextIdentity()`).
 - Redis + Horizon para filas. Gotenberg para gerar o PDF do laudo.
 - Assinatura do laudo com certificado ICP-Brasil A1, padrão PAdES.

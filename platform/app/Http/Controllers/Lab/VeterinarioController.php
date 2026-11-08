@@ -13,8 +13,8 @@ use Inertia\Response;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 use Vidra\Shared\Domain\ValueObjects\Uf;
 use Vidra\Veterinaria\Application\RegistrarVeterinario\RegistrarVeterinario;
-use Vidra\Veterinaria\Domain\Veterinario\Exceptions\CrmvJaCadastrado;
 use Vidra\Veterinaria\Domain\Veterinario\Tratamento;
+use Vidra\Veterinaria\Domain\Vinculo\Exceptions\VeterinarioJaVinculado;
 
 /**
  * Adaptador HTTP: traduz a requisição para o caso de uso e o resultado para Inertia.
@@ -32,13 +32,15 @@ final class VeterinarioController extends Controller
     public function store(RegistrarVeterinarioRequest $request, RegistrarVeterinario $registrar): RedirectResponse
     {
         try {
-            $registrar($request->toInput());
-        } catch (CrmvJaCadastrado $e) {
+            $resultado = $registrar($request->toInput());
+        } catch (VeterinarioJaVinculado $e) {
             throw ValidationException::withMessages(['crmv_numero' => $e->getMessage()]);
         } catch (InvalidValue $e) {
             throw ValidationException::withMessages(['form' => $e->getMessage()]);
         }
 
-        return to_route('lab.veterinarios.create')->with('success', 'Veterinário cadastrado.');
+        return to_route('lab.veterinarios.create')->with('success', $resultado->reaproveitado
+            ? $resultado->nomeDeExibicao.' já estava no Vidra e agora faz parte do seu laboratório.'
+            : 'Veterinário cadastrado.');
     }
 }

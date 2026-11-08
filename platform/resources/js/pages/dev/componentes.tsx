@@ -193,8 +193,12 @@ export default function VitrineDeComponentes() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                         <div className="flex flex-col gap-2">
-                            <Checkbox label="Um e-mail com o PDF a cada laudo liberado" defaultChecked />
-                            <Checkbox label="Fernanda autoriza receber os laudos por e-mail" description="Registrado com data, hora e atendente." />
+                            <Checkbox id="exemplo-laudo-email" label="Um e-mail com o PDF a cada laudo liberado" defaultChecked />
+                            <Checkbox
+                                id="exemplo-autorizacao-email"
+                                label="Fernanda autoriza receber os laudos por e-mail"
+                                description="Registrado com data, hora e atendente."
+                            />
                             <Switch checked={acesso} onCheckedChange={setAcesso} label="Acesso ao Vidra" />
                         </div>
                         <RadioCardGroup

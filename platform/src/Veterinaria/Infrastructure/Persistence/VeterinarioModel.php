@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $crmv_uf
  * @property string $email
  * @property string $celular
- * @property string $telefone_critico
  * @property string|null $especialidade
  */
 final class VeterinarioModel extends Model

@@ -32,7 +32,6 @@ final class EloquentVeterinarioRepository implements VeterinarioRepository
                 'crmv_uf' => $veterinario->crmv->uf->value,
                 'email' => $veterinario->email()->value,
                 'celular' => $veterinario->celular()->digits,
-                'telefone_critico' => $veterinario->telefoneCritico()->digits,
                 'especialidade' => $veterinario->especialidade(),
             ],
         );
@@ -57,7 +56,6 @@ final class EloquentVeterinarioRepository implements VeterinarioRepository
             crmv: new Crmv($model->crmv_numero, Uf::from($model->crmv_uf)),
             email: new Email($model->email),
             celular: new Telefone($model->celular),
-            telefoneCritico: new Telefone($model->telefone_critico),
             especialidade: $model->especialidade,
         );
     }

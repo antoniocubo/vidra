@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 | entrar, este arquivo passa a ser carregado dentro de Route::domain().
 */
 
-Route::middleware(['auth'])->name('lab.')->group(function (): void {
+Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): void {
     Route::get('veterinarios/novo', [VeterinarioController::class, 'create'])->name('veterinarios.create');
     Route::post('veterinarios', [VeterinarioController::class, 'store'])->name('veterinarios.store');
 });

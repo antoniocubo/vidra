@@ -1,4 +1,17 @@
-import { Button, FormActions, FormField, FormSection, PageHeader, Select, TextInput, Toast, useFlashToast } from '@/components/vidra';
+import {
+    Alert,
+    Button,
+    Checkbox,
+    FormActions,
+    FormField,
+    FormSection,
+    PageHeader,
+    RadioCardGroup,
+    Select,
+    TextInput,
+    Toast,
+    useFlashToast,
+} from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -25,6 +38,9 @@ const VAZIO = {
     celular: '',
     telefone_critico: '',
     especialidade: '',
+    quem_paga: 'clinica',
+    recebe_laudo: 'cada_laudo',
+    ve_pedidos_dos_colegas: false,
 };
 
 export default function NovoVeterinario({ tratamentos, ufs }: Props) {
@@ -83,6 +99,9 @@ export default function NovoVeterinario({ tratamentos, ufs }: Props) {
                     </FormField>
                 </FormSection>
 
+                <p className="text-muted-foreground text-xs">
+                    O CRMV aparece no laudo como solicitante. Se outro laboratório já cadastrou este veterinário, o Vidra aproveita o cadastro.
+                </p>
                 <FormSection title="Contato">
                     <FormField id="email" label="E-mail" hint="Recebe os laudos e é o login." error={errors.email} className="sm:col-span-2">
                         <TextInput type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required autoComplete="email" />
@@ -106,6 +125,58 @@ export default function NovoVeterinario({ tratamentos, ufs }: Props) {
                     </FormField>
                 </FormSection>
 
+                <FormSection title="Quem paga os pedidos, por padrão">
+                    <div className="sm:col-span-2">
+                        <RadioCardGroup
+                            name="quem_paga"
+                            label="Pagador padrão"
+                            value={data.quem_paga}
+                            onChange={(value) => setData('quem_paga', value)}
+                            options={[
+                                {
+                                    value: 'clinica',
+                                    label: 'A clínica, na fatura mensal',
+                                    description: 'O exame entra na fatura da clínica escolhida no pedido.',
+                                },
+                                {
+                                    value: 'veterinario',
+                                    label: 'O próprio veterinário, na fatura mensal',
+                                    description: 'Para quem atende em casa ou em consultório sem CNPJ de clínica.',
+                                },
+                                {
+                                    value: 'tutor',
+                                    label: 'O tutor, no balcão',
+                                    description: 'O tutor paga na entrega da amostra, por Pix ou cartão.',
+                                },
+                            ]}
+                        />
+                        {errors.quem_paga && <Alert tone="crit" title={errors.quem_paga} />}
+                    </div>
+                </FormSection>
+                <FormSection title="Como recebe os laudos">
+                    <div className="space-y-4 sm:col-span-2">
+                        <RadioCardGroup
+                            name="recebe_laudo"
+                            label="Entrega dos laudos"
+                            value={data.recebe_laudo}
+                            onChange={(value) => setData('recebe_laudo', value)}
+                            options={[
+                                { value: 'cada_laudo', label: 'Um e-mail com o PDF a cada laudo liberado' },
+                                { value: 'resumo_diario', label: 'Um resumo do dia, às 18h, com todos os laudos liberados' },
+                            ]}
+                        />
+                        {errors.recebe_laudo && <Alert tone="crit" title={errors.recebe_laudo} />}
+                        <Checkbox
+                            id="ve_pedidos_dos_colegas"
+                            label="Também ver os pedidos dos colegas da clínica"
+                            description="Para quem responde pela clínica. Sem isso, cada veterinário vê só os próprios pedidos."
+                            checked={data.ve_pedidos_dos_colegas}
+                            onChange={(event) => setData('ve_pedidos_dos_colegas', event.target.checked)}
+                        />
+                        {errors.ve_pedidos_dos_colegas && <Alert tone="crit" title={errors.ve_pedidos_dos_colegas} />}
+                    </div>
+                </FormSection>
+                {'form' in errors && <Alert tone="crit" title={String(errors.form)} />}
                 <FormActions>
                     <Button type="submit" loading={processing}>
                         Salvar veterinário

@@ -21,7 +21,11 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export type Laboratorio = { id: string; nome: string; papel: string };
+
 export interface SharedData {
+    laboratorio: Laboratorio | null;
+    laboratorios: Laboratorio[];
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
