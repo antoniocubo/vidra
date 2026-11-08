@@ -7,5 +7,6 @@ return [
     Vidra\Shared\Infrastructure\SharedServiceProvider::class,
     Vidra\Acesso\Infrastructure\AcessoServiceProvider::class,
     Vidra\Catalogo\Infrastructure\CatalogoServiceProvider::class,
+    Vidra\Pedidos\Infrastructure\PedidosServiceProvider::class,
     Vidra\Veterinaria\Infrastructure\VeterinariaServiceProvider::class,
 ];

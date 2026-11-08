@@ -13,4 +13,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): void {
     require __DIR__.'/lab/veterinaria.php';
     require __DIR__.'/lab/catalogo.php';
+    require __DIR__.'/lab/pedidos.php';
 });

@@ -146,11 +146,12 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 
 Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um componente, uma tela, um lote de arquivos) podem ir para o Codex CLI (`codex`, já instalado). O Claude escreve a instrução, roda o Codex, revisa o resultado e testa.
 
-- **Modelo:** use `-m gpt-6-astra`. A conta é do ChatGPT e recusa os outros modelos, inclusive o padrão do `~/.codex/config.toml` (`gpt-5.4`), com o erro "model is not supported when using Codex with a ChatGPT account". `gpt-5.6-terra` e `gpt-5.6-sol` também respondem. Para ver o catálogo: `codex debug models`.
+- **Modelo:** use `-m gpt-6.1-sol` (decidido em 08/11/2026: quase o desempenho do `gpt-6-astra` gastando menos da cota). A conta é do ChatGPT e recusa alguns modelos, inclusive o padrão do `~/.codex/config.toml` (`gpt-5.4`), com o erro "model is not supported when using Codex with a ChatGPT account". Para ver o catálogo: `codex debug models`.
+- **Cota:** a conta tem limite de uso por janela de horas. Rode um lote de cada vez no Codex e peça as checagens completas só no fim do lote. Se o limite estourar, o plano B (abaixo) assume.
 - **Comando** (da raiz do repositório, em segundo plano):
 
   ```bash
-  codex exec -m gpt-6-astra -s workspace-write -C platform -o <saida>.md - < <instrucao>.md > <log>.txt 2>&1
+  codex exec -m gpt-6.1-sol -s workspace-write -C platform -o <saida>.md - < <instrucao>.md > <log>.txt 2>&1
   ```
 
   `-s workspace-write` deixa escrever só dentro de `platform/`; `-o` grava a resposta final; a instrução vai pela entrada padrão.

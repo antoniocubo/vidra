@@ -27,6 +27,8 @@ use Vidra\Veterinaria\Application\RetirarAutorizacaoDeEmail\RetirarAutorizacaoDe
 
 final class TutorController extends Controller
 {
+    private const string VOLTAR_AO_PEDIDO = 'pedido';
+
     public function index(Request $request, BuscarTutores $buscar, DetalharTutor $detalhar): Response
     {
         $request->validate(['busca' => ['nullable', 'string', 'max:255'], 'tutor' => ['nullable', 'uuid']]);
@@ -43,15 +45,21 @@ final class TutorController extends Controller
 
     public function create(Request $request, ListarVinculosParaEscolha $listar, PerfisDeReferencia $perfis): Response
     {
-        return Inertia::render('lab/tutores/create', ['celular' => $request->string('celular')->value(), 'vinculos' => $listar(), 'perfis' => $perfis->todos(), 'hoje' => now('America/Sao_Paulo')->format('Y-m-d')]);
+        return Inertia::render('lab/tutores/create', ['celular' => $request->string('celular')->value(), 'voltar' => $request->string('voltar')->value() === self::VOLTAR_AO_PEDIDO ? self::VOLTAR_AO_PEDIDO : '', 'vinculos' => $listar(), 'perfis' => $perfis->todos(), 'hoje' => now('America/Sao_Paulo')->format('Y-m-d')]);
     }
 
-    public function store(CadastrarTutorRequest $request, CadastrarTutor $cadastrar): RedirectResponse
+    public function store(CadastrarTutorRequest $request, CadastrarTutor $cadastrar, DetalharTutor $detalhar): RedirectResponse
     {
         try {
             $id = $cadastrar($request->toInput());
         } catch (DomainException $e) {
             TutorErrosController::traduzir($e, 'animais.0.');
+        }
+
+        // Quem veio do pedido volta para ele, já com o primeiro animal escolhido.
+        $animal = $request->string('voltar')->value() === self::VOLTAR_AO_PEDIDO ? ($detalhar(new DetalharTutorInput($id->value))->animais[0]->id ?? null) : null;
+        if ($animal !== null) {
+            return to_route('lab.pedidos.create', ['animal' => $animal])->with('success', $request->string('nome')->trim()->value().' cadastrada.');
         }
 
         return to_route('lab.tutores.index', ['tutor' => $id->value])->with('success', $request->string('nome')->trim()->value().' cadastrada.');

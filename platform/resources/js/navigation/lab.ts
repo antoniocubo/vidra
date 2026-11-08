@@ -16,13 +16,21 @@ import {
 export interface LabNavItem {
     title: string;
     icon: LucideIcon;
-    routeName: 'dashboard' | 'lab.veterinarios.index' | 'lab.tutores.index' | 'lab.clinicas.index' | 'lab.exames.index' | null;
+    routeName:
+        | 'dashboard'
+        | 'lab.pedidos.index'
+        | 'lab.amostras.index'
+        | 'lab.veterinarios.index'
+        | 'lab.tutores.index'
+        | 'lab.clinicas.index'
+        | 'lab.exames.index'
+        | null;
 }
 
 export const labNavigation: LabNavItem[] = [
     { title: 'Painel', icon: LayoutGrid, routeName: 'dashboard' },
-    { title: 'Pedidos', icon: ClipboardList, routeName: null },
-    { title: 'Amostras', icon: TestTube, routeName: null },
+    { title: 'Pedidos', icon: ClipboardList, routeName: 'lab.pedidos.index' },
+    { title: 'Amostras', icon: TestTube, routeName: 'lab.amostras.index' },
     { title: 'Bancada', icon: FlaskConical, routeName: null },
     { title: 'Liberação', icon: FileCheck, routeName: null },
     { title: 'Laudos', icon: FileText, routeName: null },

@@ -27,6 +27,10 @@ final class VeterinariaServiceProvider extends ServiceProvider
         \Vidra\Veterinaria\Domain\Vinculo\VinculosParaEscolha::class => EloquentVinculoRepository::class,
         \Vidra\Veterinaria\Domain\Relogio::class => RelogioSistema::class,
         \Vidra\Catalogo\Domain\Referencia\PerfisDeReferencia::class => Referencia\PerfisVeterinarios::class,
+        \Vidra\Pedidos\Domain\Portas\Pacientes::class => Pedidos\PacientesVeterinaria::class,
+        \Vidra\Pedidos\Domain\Portas\Solicitantes::class => Pedidos\SolicitantesVeterinaria::class,
+        \Vidra\Pedidos\Domain\Portas\Pagadores::class => Pedidos\PagadoresVeterinaria::class,
+        \Vidra\Pedidos\Domain\Portas\Vocabulario::class => Pedidos\VocabularioVeterinaria::class,
         Transacao::class => TransacaoEloquent::class,
     ];
 }

@@ -4,9 +4,16 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { AnimalForm, animalVazio } from './animal-form';
 import { AnimalPreview } from './animal-preview';
 import { ContatoFields, type Contato } from './contato-fields';
-type Props = { celular: string; vinculos: { id: string; nome: string }[]; perfis: { chave: string; nome: string; grupo: string }[]; hoje: string };
-export default function CadastrarTutor({ celular, vinculos, perfis, hoje }: Props) {
-    const form = useForm<Contato & { animais: ReturnType<typeof animalVazio>[] }>({
+type Props = {
+    celular: string;
+    voltar: string;
+    vinculos: { id: string; nome: string }[];
+    perfis: { chave: string; nome: string; grupo: string }[];
+    hoje: string;
+};
+export default function CadastrarTutor({ celular, voltar, vinculos, perfis, hoje }: Props) {
+    const voltaAoPedido = voltar === 'pedido';
+    const form = useForm<Contato & { animais: ReturnType<typeof animalVazio>[]; voltar: string }>({
         nome: '',
         celular,
         email: '',
@@ -14,6 +21,7 @@ export default function CadastrarTutor({ celular, vinculos, perfis, hoje }: Prop
         cep: '',
         autoriza_email: false,
         animais: [animalVazio()],
+        voltar,
     });
     const errors: Record<string, string | undefined> = form.errors;
     return (
@@ -71,10 +79,10 @@ export default function CadastrarTutor({ celular, vinculos, perfis, hoje }: Prop
                         {(errors.form || errors.animais) && <Alert tone="crit" title={errors.form || errors.animais || ''} />}
                         <FormActions>
                             <Button variant="secondary" asChild>
-                                <Link href={route('lab.tutores.index')}>Cancelar cadastro</Link>
+                                <Link href={voltaAoPedido ? route('lab.pedidos.create') : route('lab.tutores.index')}>Cancelar cadastro</Link>
                             </Button>
                             <Button type="submit" loading={form.processing}>
-                                Salvar tutor e animais
+                                {voltaAoPedido ? 'Salvar e voltar ao pedido' : 'Salvar tutor e animais'}
                             </Button>
                         </FormActions>
                     </div>
