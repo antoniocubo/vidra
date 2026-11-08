@@ -57,11 +57,11 @@ class HandleInertiaRequests extends Middleware
         ]);
     }
 
-    /** @return array{id: string, nome: string, papel: string}|null */
+    /** @return array{id: string, nome: string, papel: string, eRt: bool}|null */
     private function laboratorio(mixed $laboratorio): ?array
     {
         return $laboratorio instanceof LaboratorioDoUsuario
-            ? ['id' => $laboratorio->id->value, 'nome' => $laboratorio->nome, 'papel' => $laboratorio->papel]
+            ? ['id' => $laboratorio->id->value, 'nome' => $laboratorio->nome, 'papel' => $laboratorio->papel, 'eRt' => $laboratorio->eRt]
             : null;
     }
 }

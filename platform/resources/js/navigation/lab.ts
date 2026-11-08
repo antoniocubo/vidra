@@ -18,6 +18,8 @@ export interface LabNavItem {
     icon: LucideIcon;
     routeName:
         | 'dashboard'
+        | 'lab.bancada.index'
+        | 'lab.liberacao.index'
         | 'lab.pedidos.index'
         | 'lab.amostras.index'
         | 'lab.veterinarios.index'
@@ -31,8 +33,8 @@ export const labNavigation: LabNavItem[] = [
     { title: 'Painel', icon: LayoutGrid, routeName: 'dashboard' },
     { title: 'Pedidos', icon: ClipboardList, routeName: 'lab.pedidos.index' },
     { title: 'Amostras', icon: TestTube, routeName: 'lab.amostras.index' },
-    { title: 'Bancada', icon: FlaskConical, routeName: null },
-    { title: 'Liberação', icon: FileCheck, routeName: null },
+    { title: 'Bancada', icon: FlaskConical, routeName: 'lab.bancada.index' },
+    { title: 'Liberação', icon: FileCheck, routeName: 'lab.liberacao.index' },
     { title: 'Laudos', icon: FileText, routeName: null },
     { title: 'Tutores e animais', icon: PawPrint, routeName: 'lab.tutores.index' },
     { title: 'Veterinários', icon: Stethoscope, routeName: 'lab.veterinarios.index' },

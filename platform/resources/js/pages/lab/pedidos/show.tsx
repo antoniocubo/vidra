@@ -21,7 +21,11 @@ type Pedido = {
     totalCentavos: number;
     etiquetas: number;
 };
-type Props = { pedido: Pedido; imprimir: boolean };
+type Props = {
+    pedido: Pedido;
+    imprimir: boolean;
+    laudo: { numero: string; rt: string; registro: string; usuario: string; quando: string; codigo: string } | null;
+};
 type Etapa = 'done' | 'current' | 'todo';
 
 const ETAPAS = ['Pedido', 'Amostra', 'Bancada', 'Liberação', 'Laudo'];
@@ -35,7 +39,7 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
     rejeitada: { rotulo: 'Rejeitada', tom: 'crit' },
 };
 
-export default function Pedido({ pedido, imprimir }: Props) {
+export default function Pedido({ pedido, imprimir, laudo }: Props) {
     const flash = useFlashToast();
     const etiquetas = route('lab.pedidos.etiquetas', { pedido: pedido.id });
 
@@ -132,6 +136,17 @@ export default function Pedido({ pedido, imprimir }: Props) {
                         />
                     </Card>
                 </div>
+                {laudo && (
+                    <Card title={`Laudo ${laudo.numero}`}>
+                        <DetailList
+                            items={[
+                                { term: 'Liberado por', value: `${laudo.usuario} · RT ${laudo.rt} · ${laudo.registro}` },
+                                { term: 'Liberado em', value: laudo.quando, mono: true },
+                                { term: 'Código de acesso', value: laudo.codigo, mono: true },
+                            ]}
+                        />
+                    </Card>
+                )}
                 <Card title="Exames">
                     <DataTable
                         caption="Exames do pedido"

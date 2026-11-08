@@ -13,17 +13,17 @@ final class EloquentAcessos implements Acessos
 {
     public function laboratoriosDoUsuario(int $usuarioId): array
     {
-        /** @var list<object{id: string, nome: string, papel: string}> $linhas */
+        /** @var list<object{id: string, nome: string, papel: string, e_rt: bool}> $linhas */
         $linhas = DB::connection(config()->string('vidra.conexao_sistema'))
             ->table('laboratorio_usuario')
             ->join('laboratorios', 'laboratorios.id', '=', 'laboratorio_usuario.laboratorio_id')
             ->where('laboratorio_usuario.user_id', $usuarioId)
             ->orderBy('laboratorios.nome')
-            ->get(['laboratorios.id', 'laboratorios.nome', 'laboratorio_usuario.papel'])
+            ->get(['laboratorios.id', 'laboratorios.nome', 'laboratorio_usuario.papel', 'laboratorio_usuario.e_rt'])
             ->all();
 
         return array_map(
-            static fn (object $linha): LaboratorioDoUsuario => new LaboratorioDoUsuario(new LaboratorioId($linha->id), $linha->nome, $linha->papel),
+            static fn (object $linha): LaboratorioDoUsuario => new LaboratorioDoUsuario(new LaboratorioId($linha->id), $linha->nome, $linha->papel, (bool) $linha->e_rt),
             $linhas,
         );
     }

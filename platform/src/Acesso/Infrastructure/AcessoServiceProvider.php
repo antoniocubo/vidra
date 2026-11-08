@@ -15,6 +15,7 @@ final class AcessoServiceProvider extends ServiceProvider
 {
     /** @var array<class-string, class-string> */
     public array $bindings = [
+        \Vidra\Acesso\Domain\DadosDoRt::class => Persistence\EloquentDadosDoRt::class,
         LaboratorioRepository::class => EloquentLaboratorioRepository::class,
         Acessos::class => EloquentAcessos::class,
         Relogio::class => RelogioSistema::class,

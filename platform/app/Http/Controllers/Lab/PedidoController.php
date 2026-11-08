@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Lab;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Lab\AbrirPedidoRequest;
 use Closure;
+use DateTimeZone;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,11 +78,19 @@ final class PedidoController extends Controller
             ->with('success', "Pedido {$aberto->protocolo} salvo.");
     }
 
-    public function show(Request $request, string $pedido, DetalharPedido $detalhar): Response
+    public function show(Request $request, string $pedido, DetalharPedido $detalhar, \Vidra\Laudos\Application\LaudoDoPedido $laudo): Response
     {
+        $liberado = $laudo($pedido);
+
         return Inertia::render('lab/pedidos/show', [
             'pedido' => $this->executar(fn () => $detalhar($pedido)),
             'imprimir' => $request->boolean('imprimir'),
+            'laudo' => $liberado === null ? null : [
+                'numero' => $liberado->numero, 'rt' => $liberado->rtNome,
+                'registro' => $liberado->rtRegistro, 'usuario' => $liberado->usuarioNome,
+                'quando' => $liberado->liberadoEm->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i'),
+                'codigo' => $liberado->codigoAcesso,
+            ],
         ]);
     }
 

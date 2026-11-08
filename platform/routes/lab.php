@@ -14,4 +14,6 @@ Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): voi
     require __DIR__.'/lab/veterinaria.php';
     require __DIR__.'/lab/catalogo.php';
     require __DIR__.'/lab/pedidos.php';
+    require __DIR__.'/lab/bancada.php';
+    require __DIR__.'/lab/laudos.php';
 });

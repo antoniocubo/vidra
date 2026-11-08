@@ -11,5 +11,6 @@ final readonly class LaboratorioDoUsuario
         public LaboratorioId $id,
         public string $nome,
         public string $papel,
+        public bool $eRt = false,
     ) {}
 }

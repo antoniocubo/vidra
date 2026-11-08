@@ -8,5 +8,7 @@ return [
     Vidra\Acesso\Infrastructure\AcessoServiceProvider::class,
     Vidra\Catalogo\Infrastructure\CatalogoServiceProvider::class,
     Vidra\Pedidos\Infrastructure\PedidosServiceProvider::class,
+    Vidra\Bancada\Infrastructure\BancadaServiceProvider::class,
+    Vidra\Laudos\Infrastructure\LaudosServiceProvider::class,
     Vidra\Veterinaria\Infrastructure\VeterinariaServiceProvider::class,
 ];
