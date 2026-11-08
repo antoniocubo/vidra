@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Lab\PainelController;
 use App\Http\Controllers\Site\InicioController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', InicioController::class)->name('home');
 
 Route::middleware(['auth', 'laboratorio'])->group(function (): void {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', PainelController::class)->name('dashboard');
 });
 
 require __DIR__.'/lab.php';

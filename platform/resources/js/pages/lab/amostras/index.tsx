@@ -141,19 +141,21 @@ export default function Amostras({ recebidas, aguardando, selecionada }: Props) 
                                 emptyState={<p className="text-muted-foreground text-sm">Nenhuma amostra recebida hoje. Bipe a primeira etiqueta.</p>}
                             />
                         </Card>
-                        <Card
-                            title="Aguardando chegada"
-                            action={<span className="text-muted-foreground text-xs">{aguardando.length} esperadas</span>}
-                        >
-                            <DataTable
-                                caption="Amostras que ainda não chegaram"
-                                rows={aguardando}
-                                getRowId={(l) => l.id}
-                                selectedId={selecionada?.linha.id}
-                                columns={colunas(selecionada?.linha.id, false)}
-                                emptyState={<p className="text-muted-foreground text-sm">Nenhuma amostra esperada no momento.</p>}
-                            />
-                        </Card>
+                        <div id="aguardando" className="scroll-mt-6">
+                            <Card
+                                title="Aguardando chegada"
+                                action={<span className="text-muted-foreground text-xs">{aguardando.length} esperadas</span>}
+                            >
+                                <DataTable
+                                    caption="Amostras que ainda não chegaram"
+                                    rows={aguardando}
+                                    getRowId={(l) => l.id}
+                                    selectedId={selecionada?.linha.id}
+                                    columns={colunas(selecionada?.linha.id, false)}
+                                    emptyState={<p className="text-muted-foreground text-sm">Nenhuma amostra esperada no momento.</p>}
+                                />
+                            </Card>
+                        </div>
                     </div>
                     {selecionada ? (
                         <PainelDaAmostra key={selecionada.linha.id} amostra={selecionada} />

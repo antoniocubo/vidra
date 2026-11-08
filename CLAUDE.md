@@ -208,3 +208,6 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
 - O PHPStan tem uma baseline (`platform/phpstan-baseline.neon`) só com erros do código de autenticação do starter kit. Ela some quando a autenticação multi-laboratório for reescrita. Não adicione nada novo à baseline.
 - As telas de auth e settings ainda estão em inglês (starter kit).
 - Roteamento por subdomínio: hoje `routes/lab.php` está sem `Route::domain()`.
+- Fora do MVP construído em 08/11/2026 (a fazer): portal do veterinário (`vet.`), e-mail de resumo diário para o veterinário, assinatura ICP-Brasil (PAdES), IA (pedido por foto e resumo para o tutor), fatura mensal das clínicas, contagem diferencial e campos calculados do hemograma.
+- Valores provisórios que o laboratório precisa confirmar: limite de 50% do delta check (`Bancada`) e os cortes de idade dos perfis de referência (cão idoso a partir de 7 anos, gato a partir de 10, equino a partir de 15).
+- Débitos pequenos: `PacienteCard` genérico para o novo pedido não usar o `AnimalCard` da linha Pet; o adaptador `CatalogoDeExames` do `Pedidos` captura uma exceção do domínio do `Catalogo`; "Laudos liberados hoje" no painel filtra pela data de abertura do pedido; a busca de exame no novo pedido tira o `?animal=` da URL.

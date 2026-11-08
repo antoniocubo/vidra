@@ -20,7 +20,7 @@ final class BancadaController extends ResultadosController
     public function index(Request $request, MapaDeTrabalho $mapa, AbrirItemNaBancada $abrir): Response
     {
         $request->validate(['setor' => ['nullable', 'string', 'max:40'], 'item' => ['nullable', 'uuid']]);
-        $setor = $request->string('setor')->value() ?: 'hematologia';
+        $setor = $request->string('setor')->value() ?: $this->primeiroSetorComTrabalho($mapa(null)['setores']);
         $lista = $mapa($setor);
         $id = $request->string('item')->value() ?: ($lista['itens'][0]->id ?? null);
         $selecionado = null;
@@ -59,5 +59,21 @@ final class BancadaController extends ResultadosController
         $this->executar(fn () => $reabrir($item));
 
         return to_route('lab.bancada.index', ['item' => $item])->with('success', 'Item reaberto para correção.');
+    }
+
+    /**
+     * Sem setor na URL (vindo do painel, por exemplo), abre o primeiro que tem itens.
+     *
+     * @param  array<string, int>  $setores
+     */
+    private function primeiroSetorComTrabalho(array $setores): string
+    {
+        foreach ($setores as $setor => $quantidade) {
+            if ($quantidade > 0) {
+                return $setor;
+            }
+        }
+
+        return 'hematologia';
     }
 }

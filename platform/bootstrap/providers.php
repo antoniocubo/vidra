@@ -11,4 +11,5 @@ return [
     Vidra\Bancada\Infrastructure\BancadaServiceProvider::class,
     Vidra\Laudos\Infrastructure\LaudosServiceProvider::class,
     Vidra\Veterinaria\Infrastructure\VeterinariaServiceProvider::class,
+    Vidra\Painel\Infrastructure\PainelServiceProvider::class,
 ];
