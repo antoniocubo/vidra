@@ -2,7 +2,19 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
+/** Tema de quem ainda não escolheu nada em Configurações › Aparência. */
+const temaPadrao: Appearance = 'light';
+
+// Chave nova: a do starter kit ('appearance') guardava 'system' sem o usuário escolher, só por abrir a tela.
+const chave = 'vidra-tema';
+
 const prefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+const temaSalvo = (): Appearance => {
+    const salvo = localStorage.getItem(chave);
+
+    return salvo === 'light' || salvo === 'dark' || salvo === 'system' ? salvo : temaPadrao;
+};
 
 // Páginas públicas (como a landing) são a cara da marca: ficam claras mesmo com o sistema no escuro.
 let claroForcado = false;
@@ -15,17 +27,11 @@ const applyTheme = (appearance: Appearance) => {
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
-};
+const handleSystemThemeChange = () => applyTheme(temaSalvo());
 
 export function initializeTheme() {
-    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
-
-    applyTheme(savedAppearance);
-
-    // Add the event listener for system theme changes...
+    localStorage.removeItem('appearance');
+    applyTheme(temaSalvo());
     mediaQuery.addEventListener('change', handleSystemThemeChange);
 }
 
@@ -43,20 +49,16 @@ export function useTemaClaro() {
 }
 
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [appearance, setAppearance] = useState<Appearance>(temaPadrao);
 
+    // Só grava quando o usuário escolhe; abrir a tela de aparência não muda nada.
     const updateAppearance = (mode: Appearance) => {
         setAppearance(mode);
-        localStorage.setItem('appearance', mode);
+        localStorage.setItem(chave, mode);
         applyTheme(mode);
     };
 
-    useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
-
-        return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    }, []);
+    useEffect(() => setAppearance(temaSalvo()), []);
 
     return { appearance, updateAppearance };
 }
