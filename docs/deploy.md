@@ -41,6 +41,8 @@ O Caddy emite os certificados sozinho na primeira subida (precisa do DNS já apo
 
 `SESSION_DOMAIN` fica vazio: cada host guarda o seu cookie. Uma sessão no `app.` não vale no `vet.` nem no `laudo.`, que é o desejado.
 
+A aplicação separa as rotas por host com `VIDRA_DOMINIO_SITE`, `VIDRA_DOMINIO_APP`, `VIDRA_DOMINIO_VET` e `VIDRA_DOMINIO_LAUDO` (no `.env`): o login da equipe só existe no `app.`, o do veterinário só no `vet.`, o link do tutor só no `laudo.`. Sem essas variáveis (desenvolvimento), tudo responde no mesmo host com `/vet` e `/laudo` de prefixo. O webhook do Asaas fica em `https://app.vidralab.com.br/webhooks/asaas`, com o token igual a `ASAAS_WEBHOOK_TOKEN`.
+
 ## 3. Amazon SES
 
 1. SES na região escolhida (`AWS_SES_REGION`, `sa-east-1` ou `us-east-1`) > Identities > Create identity > Domain `vidralab.com.br`, com Easy DKIM (RSA 2048).

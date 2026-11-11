@@ -7,6 +7,17 @@ return [
     /*
     | Endereços das superfícies do Vidra (cada uma num subdomínio).
     */
+    /*
+    | Host de cada superfície em produção (app., vet., laudo. e o site). Vazio
+    | (local e testes): tudo responde no mesmo host, com /vet e /laudo de prefixo.
+    */
+    'dominios' => [
+        'site' => env('VIDRA_DOMINIO_SITE'),
+        'app' => env('VIDRA_DOMINIO_APP'),
+        'vet' => env('VIDRA_DOMINIO_VET'),
+        'laudo' => env('VIDRA_DOMINIO_LAUDO'),
+    ],
+
     'urls' => [
         'laudo' => env('VIDRA_URL_LAUDO', 'https://laudo.vidralab.com.br'),
         'vet' => env('VIDRA_URL_VET', 'https://vet.vidralab.com.br'),
