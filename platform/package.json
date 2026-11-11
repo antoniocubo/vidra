@@ -9,10 +9,12 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
         "types": "tsc --noEmit",
-        "lint:check": "eslint ."
+        "lint:check": "eslint .",
+        "e2e": "node -e \"require('fs').copyFileSync('.env.e2e.example','.env.e2e');require('fs').closeSync(require('fs').openSync('database/e2e.sqlite','w'))\" && APP_ENV=e2e php artisan migrate:fresh --force && npm run build && playwright test"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
+        "@playwright/test": "^1.65.0",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-react": "^7.37.3",

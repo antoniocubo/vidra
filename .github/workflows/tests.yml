@@ -1,0 +1,128 @@
+name: tests
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: platform
+
+jobs:
+  sqlite:
+    name: php artisan test (SQLite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+      - run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan test
+
+  postgres:
+    name: composer test:postgres (Postgres 17 e RLS)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: vidra
+          POSTGRES_USER: vidra
+          POSTGRES_PASSWORD: vidra
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vidra"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          extensions: pdo_pgsql
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+      - run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+      - run: cp .env.example .env && php artisan key:generate
+
+      # Cria o usuário vidra_app (sem BYPASSRLS) e o banco vidra_testes, como no docker-compose.
+      - name: Preparar o Postgres
+        run: psql -h 127.0.0.1 -U vidra -d vidra -v ON_ERROR_STOP=1 -f ../infra/postgres/01-vidra-app.sql
+        env:
+          PGPASSWORD: vidra
+
+      - run: composer test:postgres
+
+  e2e:
+    name: Playwright (pedido ao laudo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+          - 3001:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # O npm run e2e copia o .env.e2e.example, recria o banco database/e2e.sqlite, compila o front e roda o teste.
+      - run: npm run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            platform/playwright-report
+            platform/test-results
+          retention-days: 7
