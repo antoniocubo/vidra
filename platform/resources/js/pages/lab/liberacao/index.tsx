@@ -43,9 +43,11 @@ type Pedido = {
     itens: Record<string, string>;
     resultados: Resultado[];
     pronto: boolean;
+    retificacao: string | null;
+    proximaVersao: number;
 };
 type Props = {
-    fila: { id: string; protocolo: string; paciente: string; solicitante: string; criticos: number; alterados: number }[];
+    fila: { id: string; protocolo: string; paciente: string; solicitante: string; criticos: number; alterados: number; retificacao: string | null }[];
     selecionado: Pedido | null;
     eRt: boolean;
 };
@@ -123,6 +125,7 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
     return (
         <div className="grid min-w-0 items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_300px]">
             <Card title={`${pedido.protocolo} · ${pedido.paciente}`}>
+                {pedido.retificacao && <Alert tone="warn" title={`Laudo em retificação · ${pedido.retificacao}`} />}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[620px] text-sm">
                         <caption className="sr-only">Conferência de todos os exames</caption>
@@ -202,7 +205,7 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
                             aria-describedby={motivo ? 'motivo-liberacao' : undefined}
                             onClick={() => setConfirmar(true)}
                         >
-                            Liberar laudo
+                            {pedido.retificacao ? `Liberar versão ${pedido.proximaVersao}` : 'Liberar laudo'}
                         </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -219,8 +222,8 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
                     open={confirmar}
                     onOpenChange={setConfirmar}
                     title={`Liberar o laudo do ${pedido.paciente}?`}
-                    description="Depois de liberado, os resultados ficam fechados para edição. A entrega ao solicitante e ao responsável será disponibilizada em uma próxima etapa."
-                    confirmLabel="Liberar laudo"
+                    description="Depois de liberado, os resultados ficam fechados para edição e o laudo segue para entrega."
+                    confirmLabel={pedido.retificacao ? `Liberar versão ${pedido.proximaVersao}` : 'Liberar laudo'}
                     loading={form.processing}
                     onConfirm={() => form.post(route('lab.liberacao.liberar', { pedido: pedido.id }), { onError: () => setConfirmar(false) })}
                 />
@@ -268,6 +271,12 @@ export default function Liberacao({ fila, selecionado, eRt }: Props) {
                                             <span className="block font-semibold">{p.paciente}</span>
                                             <span className="text-muted-foreground block text-xs">{p.solicitante}</span>
                                             <div className="mt-2 flex flex-wrap gap-1">
+                                                {p.retificacao && (
+                                                    <>
+                                                        <StatusBadge tone="warn">Retificação</StatusBadge>
+                                                        <span className="text-muted-foreground block text-xs">{p.retificacao}</span>
+                                                    </>
+                                                )}
                                                 {p.criticos > 0 && <StatusBadge tone="crit">{plural(p.criticos, 'crítico', 'críticos')}</StatusBadge>}
                                                 {p.alterados > 0 && (
                                                     <StatusBadge tone="warn">{plural(p.alterados, 'alterado', 'alterados')}</StatusBadge>

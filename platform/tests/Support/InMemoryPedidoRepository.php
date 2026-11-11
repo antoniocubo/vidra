@@ -55,6 +55,14 @@ final class InMemoryPedidoRepository implements PedidoRepository
         return null;
     }
 
+    /** @var array<string, true> */
+    public array $comLaudo = [];
+
+    public function temLaudo(PedidoId $id): bool
+    {
+        return isset($this->comLaudo[$id->value]);
+    }
+
     public function porIds(array $ids): array
     {
         return array_intersect_key($this->items, array_flip($ids));

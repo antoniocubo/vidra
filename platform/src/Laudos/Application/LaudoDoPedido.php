@@ -14,6 +14,6 @@ final readonly class LaudoDoPedido
     {
         $laudo = $this->laudos->doPedido($id);
 
-        return $laudo === null ? null : new LaudoDto($laudo);
+        return $laudo === null ? null : new LaudoDto($laudo, $this->laudos->versoes($laudo->id));
     }
 }

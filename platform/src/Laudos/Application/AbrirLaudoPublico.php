@@ -18,8 +18,8 @@ final readonly class AbrirLaudoPublico
         return $this->acesso->abrir(CodigoDeAcesso::deEntrada($codigo), $ip, $agente);
     }
 
-    public function pdf(string $codigo): DownloadDoLaudo
+    public function pdf(string $codigo, ?int $versao = null): DownloadDoLaudo
     {
-        return $this->acesso->pdf(CodigoDeAcesso::deEntrada($codigo));
+        return $this->acesso->pdf(CodigoDeAcesso::deEntrada($codigo), $versao);
     }
 }

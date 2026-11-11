@@ -15,7 +15,22 @@ final readonly class TransicionarItem
 {
     public function __construct(private PedidoRepository $pedidos) {}
 
+    public function reabrirParaRetificacao(string $pedidoId, string $itemId): void
+    {
+        $this->transicionar($pedidoId, $itemId, 'resultado_digitado', SituacaoDoItem::Liberado);
+    }
+
     public function __invoke(string $pedidoId, string $itemId, string $destino): void
+    {
+        $origem = match ($destino) {
+            'resultado_digitado' => SituacaoDoItem::EmAnalise,
+            'em_analise', 'liberado' => SituacaoDoItem::ResultadoDigitado,
+            default => throw PedidoInvalido::itemInexistente(),
+        };
+        $this->transicionar($pedidoId, $itemId, $destino, $origem);
+    }
+
+    private function transicionar(string $pedidoId, string $itemId, string $destino, SituacaoDoItem $origem): void
     {
         $p = $this->pedidos->porId(new PedidoId($pedidoId)) ?? throw PedidoInvalido::itemInexistente();
         $itens = [];
@@ -27,10 +42,7 @@ final readonly class TransicionarItem
                 continue;
             }
             $encontrado = true;
-            $permitido = match ($destino) {
-                'resultado_digitado' => $i->situacao === SituacaoDoItem::EmAnalise, 'em_analise' => $i->situacao === SituacaoDoItem::ResultadoDigitado, 'liberado' => $i->situacao === SituacaoDoItem::ResultadoDigitado, default => false
-            };
-            if (! $permitido) {
+            if ($i->situacao !== $origem) {
                 throw PedidoInvalido::itemInexistente();
             }
             $itens[] = ItemDoPedido::restaurar($i->id, $i->exameId, $i->codigo, $i->nome, $i->setor, $i->material, $i->precoTabelaCentavos, $i->descontoPercentual, $i->precoCentavos, SituacaoDoItem::from($destino));

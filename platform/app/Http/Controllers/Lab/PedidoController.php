@@ -99,6 +99,8 @@ final class PedidoController extends Controller
                 'registro' => $liberado->rtRegistro, 'usuario' => $liberado->usuarioNome,
                 'quando' => $liberado->liberadoEm->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i'),
                 'codigo' => $liberado->codigoAcesso,
+                'reabertoMotivo' => $liberado->reabertoMotivo,
+                'versoes' => array_map(fn ($v): array => ['versao' => $v->versao, 'em' => $v->liberadoEm->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i'), 'por' => $v->usuarioNome, 'motivo' => $v->motivo, 'pdf' => $v->pdfCaminho === null ? null : route('lab.pedidos.laudo.versao.pdf', ['pedido' => $pedido, 'versao' => $v->versao])], $liberado->versoes),
             ],
         ]);
     }

@@ -22,7 +22,7 @@ use Vidra\Pedidos\Application\ParaLaudo\LerPedidoParaLaudo;
 
 final readonly class FonteDosPedidos implements FonteDoLaudo
 {
-    public function __construct(private LerPedidoParaLaudo $pedido, private ResultadosParaConferencia $resultados, private PreferenciaDeEntrega $preferencia) {}
+    public function __construct(private LerPedidoParaLaudo $pedido, private ResultadosParaConferencia $resultados, private PreferenciaDeEntrega $preferencia, private \Vidra\Laudos\Domain\LaudoRepository $laudos) {}
 
     public function montar(Laudo $l): ConteudoDoLaudo
     {
@@ -75,12 +75,23 @@ final readonly class FonteDosPedidos implements FonteDoLaudo
         }
         $cnpj = preg_replace('/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/', '$1.$2.$3/$4-$5', (string) $lab->cnpj) ?? '';
 
-        return new ConteudoDoLaudo($l->id, $l->pedidoId, $l->laboratorioId, $l->numeroFormatado(), $l->codigoAcesso->value, $link,
+        $versao = Persistence\VersaoLaudoModel::query()->where('laudo_id', $l->id)->where('versao', $l->versao)->first();
+        // O link público mantém os resultados assinados durante a correção na bancada.
+        $congelado = $versao?->conteudo === null ? null : unserialize($versao->conteudo, ['allowed_classes' => [ConteudoDoLaudo::class, \Vidra\Laudos\Domain\Retificacao::class, \Vidra\Laudos\Domain\VersaoDoLaudo::class, DateTimeImmutable::class]]);
+        if ($congelado instanceof ConteudoDoLaudo) {
+            $exames = $congelado->exames;
+        }
+        $conteudo = new ConteudoDoLaudo($l->id, $l->pedidoId, $l->laboratorioId, $l->versaoFormatada(), $l->codigoAcesso->value, $link,
             ['nome' => (string) $lab->nome, 'endereco' => $lab->endereco.' · '.$lab->cidade.' / '.$lab->uf, 'telefone' => (new \Vidra\Shared\Domain\ValueObjects\Telefone((string) $lab->telefone))->formatted(), 'cnpj' => $cnpj],
             ['nome' => $p->paciente, 'descricao' => $p->descricao, 'responsavel' => $p->responsavel], ['nome' => $p->solicitante, 'registro' => $p->registro], $p->protocolo,
             ['pedido' => F::data($p->criadoEm) ?? '', 'recebimento' => F::data($chegadas[0] ?? null), 'liberacao' => F::data($l->liberadoEm) ?? ''],
             $exames, $ressalvas, $l->observacao, $avisos, $l->rtNome, $l->rtRegistro, $p->textos, $texto,
-            $celular === null ? null : 'https://wa.me/'.$celular.'?text='.rawurlencode($texto), $destinatarios, $preferencia === 'resumo_diario', LaudoModel::query()->whereKey($l->id)->whereNotNull('pdf_caminho')->exists());
+            $celular === null ? null : 'https://wa.me/'.$celular.'?text='.rawurlencode($texto), $destinatarios, $preferencia === 'resumo_diario', LaudoModel::query()->whereKey($l->id)->whereNotNull('pdf_caminho')->exists(), $l->versao, $l->retificacao, $this->laudos->versoes($l->id));
+        if ($versao !== null && $versao->conteudo === null) {
+            $versao->update(['conteudo' => serialize($conteudo)]);
+        }
+
+        return $conteudo;
     }
 
     private function anterior(string $pacienteId, string $analitoId, Laudo $laudo): ?ResultadoAnteriorDaBancada

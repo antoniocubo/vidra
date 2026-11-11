@@ -41,7 +41,8 @@ final readonly class DetalharPedido
         $amostras = array_values(array_filter($this->amostras->doPedido($pedido->id), fn (Amostra $a): bool => $a->itemIds !== []));
         $nomes = $this->canceladores->nomesPorIds(array_values(array_unique(array_filter(array_map(fn (ItemDoPedido $i): ?int => $i->cancelamento?->por, $pedido->itens())))));
         $podeEditar = $pedido->situacao() !== \Vidra\Pedidos\Domain\Pedido\SituacaoDoPedido::Cancelado
-            && array_filter($pedido->itens(), fn (ItemDoPedido $i): bool => $i->situacao === \Vidra\Pedidos\Domain\Pedido\SituacaoDoItem::Liberado) === [];
+            && array_filter($pedido->itens(), fn (ItemDoPedido $i): bool => $i->situacao === \Vidra\Pedidos\Domain\Pedido\SituacaoDoItem::Liberado) === []
+            && ! $this->pedidos->temLaudo($pedido->id);
         $estado = $pedido->situacao();
 
         $rotuloDoPagador = match ($pedido->pagador->tipo) {

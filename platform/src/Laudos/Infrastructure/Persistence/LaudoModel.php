@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Vidra\Shared\Infrastructure\Tenancy\PertenceAoLaboratorio;
 
 /**
+ * @property int $versao
+ * @property ?string $retificacao_motivo
+ * @property ?int $retificacao_por
+ * @property ?\Illuminate\Support\Carbon $retificacao_em
+ * @property ?string $reaberto_motivo
+ * @property ?int $reaberto_por
+ * @property ?\Illuminate\Support\Carbon $reaberto_em
  * @property string $id
  * @property string $laboratorio_id
  * @property string $pedido_id
@@ -39,6 +46,6 @@ final class LaudoModel extends Model
 
     protected function casts(): array
     {
-        return ['numero' => 'integer', 'liberado_por' => 'integer', 'liberado_em' => 'datetime'];
+        return ['versao' => 'integer', 'retificacao_em' => 'datetime', 'reaberto_em' => 'datetime', 'numero' => 'integer', 'liberado_por' => 'integer', 'liberado_em' => 'datetime'];
     }
 }

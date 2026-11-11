@@ -12,5 +12,7 @@ interface Conferencia
 
     public function bloquear(string $pedidoId): void;
 
+    public function reabrirItens(string $pedidoId): void;
+
     public function liberarItens(string $pedidoId): void;
 }

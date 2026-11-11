@@ -36,7 +36,7 @@ it('liberar despacha o job com laboratório e três tentativas', function (): vo
 });
 it('gera PDF A4 guarda e envia aos destinatários com anexo', function (): void {
     CenarioDeEntrega::executar($this->job);
-    $caminho = $this->c['lab'].'/'.$this->c['laudo'].'.pdf';
+    $caminho = $this->c['lab'].'/'.$this->c['laudo'].'-v1.pdf';
     Storage::disk('laudos')->assertExists($caminho);
     expect(Storage::disk('laudos')->get($caminho))->toBe('%PDF-1.7 teste');
     $this->assertDatabaseHas('laudos', ['id' => $this->c['laudo'], 'pdf_caminho' => $caminho, 'pdf_tentativas' => 1, 'pdf_erro' => null]);
@@ -65,7 +65,7 @@ it('registra falha de geração e relança para a fila tentar novamente', functi
     expect(fn () => CenarioDeEntrega::executar($this->job))->toThrow(FalhaAoGerarPdf::class);
     $this->assertDatabaseHas('laudos', ['id' => $this->c['laudo'], 'pdf_tentativas' => 1, 'pdf_erro' => 'O Gotenberg não gerou um PDF válido (HTTP 503).']);
     Mail::assertNothingSent();
-    Storage::disk('laudos')->assertMissing($this->c['lab'].'/'.$this->c['laudo'].'.pdf');
+    Storage::disk('laudos')->assertMissing($this->c['lab'].'/'.$this->c['laudo'].'-v1.pdf');
 });
 it('o HTML contém resultados RT ressalva observação código e QR real', function (): void {
     DB::table('amostras')->where('pedido_id', $this->c['pedido'])->update(['situacao' => 'aceita_com_ressalva', 'ressalva' => 'levemente hemolisada']);

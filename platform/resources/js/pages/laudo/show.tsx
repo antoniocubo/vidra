@@ -1,4 +1,4 @@
-import { Button, StatusBadge } from '@/components/vidra';
+import { Alert, Button, StatusBadge } from '@/components/vidra';
 import { useTemaClaro } from '@/hooks/use-appearance';
 import { Head, router } from '@inertiajs/react';
 import { Download, Share2 } from 'lucide-react';
@@ -14,6 +14,9 @@ type Resultado = {
 };
 type Props = {
     laudo: {
+        versao: number;
+        retificacao: { em: string; motivo: string } | null;
+        versoes: { versao: number; em: string; pdf: string | null }[];
         numero: string;
         codigo: string;
         laboratorio: { nome: string; endereco: string; telefone: string; cnpj: string };
@@ -47,6 +50,26 @@ export default function Laudo({ laudo }: Props) {
                 <p className="text-muted-foreground text-xs">Laudo {laudo.numero}</p>
             </header>
             <main className="mx-auto max-w-2xl space-y-5 px-5 pb-8">
+                {laudo.retificacao && (
+                    <Alert tone="warn" title={`Este laudo foi retificado em ${laudo.retificacao.em} · ${laudo.retificacao.motivo}`} />
+                )}
+                {laudo.versoes.length > 0 && (
+                    <section className="bg-card rounded-xl border p-5">
+                        <h2 className="font-display font-bold">Versões anteriores</h2>
+                        <ul className="mt-3 space-y-2">
+                            {laudo.versoes.map((v) => (
+                                <li key={v.versao}>
+                                    Versão {v.versao} · {v.em}{' '}
+                                    {v.pdf && (
+                                        <a href={v.pdf} className="text-primary underline">
+                                            Baixar PDF da versão {v.versao}
+                                        </a>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
                 <section className="bg-card border-border rounded-xl border p-5">
                     <p className="text-muted-foreground text-xs">{laudo.textos.paciente}</p>
                     <h1 className="font-display mt-1 text-3xl font-bold break-words">{laudo.paciente.nome}</h1>

@@ -36,11 +36,19 @@ final readonly class EntregaDoPedidoEloquent implements EntregaDoPedido
         return ['pdfPronto' => $m->pdf_caminho !== null, 'pdfErro' => $m->pdf_erro, 'whatsapp' => $c->whatsapp, 'link' => $c->link, 'entregas' => $entregas];
     }
 
-    public function pdf(string $pedidoId): DownloadDoLaudo
+    public function pdf(string $pedidoId, ?int $versao = null): DownloadDoLaudo
     {
         $m = LaudoModel::query()->where('pedido_id', $pedidoId)->first();
-        if ($m === null || $m->pdf_caminho === null) {
+        if ($m === null || ($versao === null && $m->pdf_caminho === null)) {
             throw new PedidoNaoEncontrado;
+        }
+        if ($versao !== null) {
+            $v = Persistence\VersaoLaudoModel::query()->where('laudo_id', $m->id)->where('versao', $versao)->first();
+            if ($v === null || $v->pdf_caminho === null) {
+                throw new PedidoNaoEncontrado;
+            }
+
+            return new DownloadDoLaudo($this->arquivos->ler($v->pdf_caminho), 'laudo-'.$m->numero.'-v'.$versao.'.pdf');
         }
         $c = ($this->montar)($pedidoId);
 
@@ -52,6 +60,6 @@ final readonly class EntregaDoPedidoEloquent implements EntregaDoPedido
         $m = LaudoModel::query()->where('pedido_id', $pedidoId)->first() ?? throw new PedidoNaoEncontrado;
         // Sem PDF (a geração falhou em todas as tentativas, ou o laudo é anterior à entrega
         // automática), o reenvio refaz a entrega completa em vez de deixar o laudo preso.
-        EntregarLaudo::dispatch($m->laboratorio_id, $pedidoId, $m->pdf_caminho === null ? 'completa' : 'emails');
+        EntregarLaudo::dispatch($m->laboratorio_id, $pedidoId, $m->pdf_caminho === null ? 'completa' : 'emails', $m->versao);
     }
 }

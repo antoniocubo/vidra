@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Laudo;
 
 use Closure;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
@@ -29,6 +30,8 @@ final class LaudoController
         }
 
         return Inertia::render('laudo/show', ['laudo' => [
+            'versao' => $c->versao, 'retificacao' => $c->retificacao === null ? null : ['motivo' => $c->retificacao->motivo, 'em' => $c->retificacao->em->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y')],
+            'versoes' => array_values(array_map(fn ($v): array => ['versao' => $v->versao, 'em' => $v->liberadoEm->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i'), 'pdf' => $v->pdfCaminho === null ? null : route('laudo.versao.pdf', ['codigo' => $codigo, 'versao' => $v->versao])], array_filter($c->versoes, fn ($v): bool => $v->versao < $c->versao))),
             'numero' => $c->numero, 'codigo' => $c->codigo, 'laboratorio' => $c->laboratorio, 'paciente' => $c->paciente,
             'datas' => $c->datas, 'exames' => $c->exames, 'textos' => $c->textos,
             'rtNome' => $c->rtNome, 'rtRegistro' => $c->rtRegistro, 'observacao' => $c->observacao,
@@ -38,9 +41,10 @@ final class LaudoController
         ]]);
     }
 
-    public function pdf(string $codigo, AbrirLaudoPublico $abrir): HttpResponse
+    public function pdf(Request $request, string $codigo, AbrirLaudoPublico $abrir, ?int $versao = null): HttpResponse
     {
-        $pdf = $this->encontrar(fn () => $abrir->pdf($codigo));
+        $this->encontrar(fn () => $abrir($codigo, $request->ip() ?? '', $request->userAgent() ?? ''));
+        $pdf = $this->encontrar(fn () => $abrir->pdf($codigo, $versao));
 
         return response($pdf->bytes)->withHeaders(['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$pdf->nome.'"', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }

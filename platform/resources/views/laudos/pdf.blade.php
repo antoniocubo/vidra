@@ -36,6 +36,9 @@
     </div>
     <div><div class="muted">Protocolo</div><strong class="mono">{{ $laudo->protocolo }}</strong><div class="mono">{{ $laudo->numero }}</div></div>
 </header>
+@if ($laudo->versao > 1)
+<section class="observacoes">Laudo retificado em {{ $laudo->retificacao?->em->setTimezone(new \DateTimeZone('America/Sao_Paulo'))->format('d/m/Y \à\s H:i') }} · {{ $laudo->retificacao?->motivo }}. Substitui a versão anterior.</section>
+@endif
 <section class="identificacao" aria-label="Identificação">
     <div><span class="muted">{{ $laudo->textos['paciente'] }}</span><strong>{{ $laudo->paciente['nome'] }}</strong>{{ $laudo->paciente['descricao'] }}</div>
     <div><span class="muted">{{ $laudo->textos['responsavel'] }}</span><strong>{{ $laudo->paciente['responsavel'] }}</strong></div>

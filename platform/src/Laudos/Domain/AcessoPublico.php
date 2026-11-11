@@ -8,5 +8,5 @@ interface AcessoPublico
 {
     public function abrir(CodigoDeAcesso $codigo, string $ip, string $agente): ConteudoDoLaudo;
 
-    public function pdf(CodigoDeAcesso $codigo): DownloadDoLaudo;
+    public function pdf(CodigoDeAcesso $codigo, ?int $versao = null): DownloadDoLaudo;
 }

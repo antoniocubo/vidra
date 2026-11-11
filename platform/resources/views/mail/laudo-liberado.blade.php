@@ -5,6 +5,7 @@
 <table role="presentation" style="max-width:560px;width:100%;margin:auto;border:1px solid;border-radius:12px;"><tr><td style="padding:24px;">
     <h2 style="margin:0 0 20px;">{{ $laudo->laboratorio['nome'] }}</h2>
     <p>Olá{{ $papel === 'tutor' ? ', '.$laudo->paciente['responsavel'] : '' }}.</p>
+    @if ($laudo->versao > 1)<p><strong>Laudo retificado</strong> · {{ $laudo->retificacao?->motivo }}. Substitui a versão anterior.</p>@endif
     <p>O laudo de <strong>{{ $laudo->paciente['nome'] }}</strong> está pronto. Liberado em {{ $laudo->datas['liberacao'] }}.</p>
     <p style="margin:24px 0;"><a href="{{ $laudo->link }}" style="display:inline-block;padding:12px 20px;border:1px solid;border-radius:8px;font-weight:bold;">Ver laudo de {{ $laudo->paciente['nome'] }}</a></p>
     <p>Código de acesso: <strong style="font-family:monospace;font-size:20px;letter-spacing:2px;">{{ $laudo->codigo }}</strong></p>

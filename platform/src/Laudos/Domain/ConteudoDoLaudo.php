@@ -26,6 +26,8 @@ final readonly class ConteudoDoLaudo
         public string $rtNome, public string $rtRegistro, public array $textos,
         public string $textoWhatsapp, public ?string $whatsapp, public array $destinatarios,
         public bool $resumoDiario, public bool $pdfPronto = false,
+        public int $versao = 1, public ?Retificacao $retificacao = null,
+        /** @var list<VersaoDoLaudo> */ public array $versoes = [],
     ) {}
 
     public function nomeArquivo(): string

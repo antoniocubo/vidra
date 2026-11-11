@@ -106,6 +106,11 @@ final readonly class EloquentPedidoRepository implements PedidoRepository
         return $model === null ? null : $this->montar([$model])[0];
     }
 
+    public function temLaudo(PedidoId $id): bool
+    {
+        return DB::table('laudos')->where('laboratorio_id', $this->laboratorio->id())->where('pedido_id', $id->value)->exists();
+    }
+
     public function porProtocolo(Protocolo $protocolo): ?Pedido
     {
         $model = PedidoModel::query()->where('protocolo', $protocolo->numero)->first();

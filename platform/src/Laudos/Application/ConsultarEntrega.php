@@ -17,9 +17,9 @@ final readonly class ConsultarEntrega
         return $this->entrega->painel($pedidoId);
     }
 
-    public function pdf(string $pedidoId): DownloadDoLaudo
+    public function pdf(string $pedidoId, ?int $versao = null): DownloadDoLaudo
     {
-        return $this->entrega->pdf($pedidoId);
+        return $this->entrega->pdf($pedidoId, $versao);
     }
 
     public function reenviar(string $pedidoId): void

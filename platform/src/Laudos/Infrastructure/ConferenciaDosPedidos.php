@@ -15,7 +15,7 @@ use Vidra\Pedidos\Application\ParaBancada\TransicionarItem;
 
 final readonly class ConferenciaDosPedidos implements Conferencia
 {
-    public function __construct(private ConsultarTrabalho $consultar, private TransicionarItem $transicionar, private ResultadosParaConferencia $resultados, private LaudoRepository $laudos, private TrabalhosDosPedidos $trabalhos, private \Vidra\Bancada\Application\AvaliarMudanca $mudanca, private \Vidra\Bancada\Application\ResultadoAnteriorLiberado $anterior) {}
+    public function __construct(private ConsultarTrabalho $consultar, private TransicionarItem $transicionar, private ResultadosParaConferencia $resultados, private LaudoRepository $laudos, private TrabalhosDosPedidos $trabalhos, private \Vidra\Bancada\Application\AvaliarMudanca $mudanca, private \Vidra\Bancada\Application\ResultadoAnteriorLiberado $anterior, private \Vidra\Laudos\Application\MontarLaudo\MontarLaudo $montar) {}
 
     public function pedidos(): array
     {
@@ -59,6 +59,16 @@ final readonly class ConferenciaDosPedidos implements Conferencia
     public function bloquear(string $pedidoId): void
     {
         $this->trabalhos->bloquear($pedidoId);
+    }
+
+    public function reabrirItens(string $pedidoId): void
+    {
+        ($this->montar)($pedidoId);
+        foreach (($this->consultar)([$pedidoId]) as $i) {
+            if ($i->situacao === 'liberado') {
+                $this->transicionar->reabrirParaRetificacao($pedidoId, $i->id);
+            }
+        }
     }
 
     public function liberarItens(string $pedidoId): void

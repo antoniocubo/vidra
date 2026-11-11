@@ -10,9 +10,9 @@ use Vidra\Laudos\Application\ConsultarEntrega;
 
 final class EntregaLaudoController extends ResultadosController
 {
-    public function pdf(string $pedido, ConsultarEntrega $entrega): Response
+    public function pdf(string $pedido, ConsultarEntrega $entrega, ?int $versao = null): Response
     {
-        $pdf = $this->executar(fn () => $entrega->pdf($pedido));
+        $pdf = $this->executar(fn () => $entrega->pdf($pedido, $versao));
 
         return response($pdf->bytes)->withHeaders(['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$pdf->nome.'"', 'Cache-Control' => 'private, no-store']);
     }

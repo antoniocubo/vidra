@@ -6,6 +6,9 @@ namespace Vidra\Laudos\Domain;
 
 interface LaudoRepository
 {
+    /** @return list<VersaoDoLaudo> */
+    public function versoes(string $laudoId): array;
+
     public function nextIdentity(): string;
 
     public function proximoNumero(): int;

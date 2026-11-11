@@ -30,22 +30,29 @@ final readonly class LiberarLaudo
             if ($p->laboratorioId !== $this->laboratorio->id()) {
                 throw new LogicException('Laboratório divergente.');
             }
-            if ($this->laudos->doPedido($p->id) !== null) {
+            $atual = $this->laudos->doPedido($p->id);
+            if ($atual !== null && ! $atual->emRetificacao()) {
                 throw ErroDeLiberacao::com('Este pedido já foi liberado.');
             }
-            $numero = $this->laudos->proximoNumero();
-            do {
-                $codigo = CodigoDeAcesso::gerar();
-            } while ($this->laudos->codigoExiste($codigo));
             $dados = $this->rt->dados();
-            $l = Laudo::liberar($this->laudos->nextIdentity(), $p, $numero, $input->por, $input->nome, $dados['nome'], $dados['registro'], new DateTimeImmutable('now', new DateTimeZone('UTC')), $input->observacao, $codigo, $this->rt->ehRt($input->por));
+            $quando = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+            $ehRt = $this->rt->ehRt($input->por);
+            if ($atual !== null) {
+                $l = $atual->liberarRetificacao($p, $input->por, $input->nome, $dados['nome'], $dados['registro'], $quando, $input->observacao, $ehRt);
+            } else {
+                $numero = $this->laudos->proximoNumero();
+                do {
+                    $codigo = CodigoDeAcesso::gerar();
+                } while ($this->laudos->codigoExiste($codigo));
+                $l = Laudo::liberar($this->laudos->nextIdentity(), $p, $numero, $input->por, $input->nome, $dados['nome'], $dados['registro'], $quando, $input->observacao, $codigo, $ehRt);
+            }
             $this->laudos->save($l);
             $this->conferencia->liberarItens($p->id);
 
             return $l;
         });
-        $this->eventos->publicar(new LaudoLiberado($laudo->id, $laudo->laboratorioId, $laudo->pedidoId, $laudo->liberadoEm));
+        $this->eventos->publicar(new LaudoLiberado($laudo->id, $laudo->laboratorioId, $laudo->pedidoId, $laudo->liberadoEm, $laudo->versao));
 
-        return $laudo->numeroFormatado();
+        return $laudo->versaoFormatada();
     }
 }

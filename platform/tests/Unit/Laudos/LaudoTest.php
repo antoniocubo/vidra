@@ -42,3 +42,39 @@ it('libera com aviso congelado e identidade do RT', function (): void {
     $l = liberarUnit(pedidoConferenciaUnit(critico: true, avisado: true));
     expect($l->numeroFormatado())->toBe('L-00001')->and($l->avisos)->toHaveCount(1)->and($l->rtRegistro)->toBe('CRMV-SP 12345');
 });
+
+function retificacaoUnit(string $motivo = 'Potássio digitado errado'): Vidra\Laudos\Domain\Retificacao
+{
+    return new Vidra\Laudos\Domain\Retificacao($motivo, 1, new DateTimeImmutable('2026-11-09T10:00:00Z'));
+}
+
+it('retifica gerando a versão 2 com o mesmo número e código', function (): void {
+    $v1 = liberarUnit(pedidoConferenciaUnit());
+    $reaberto = $v1->reabrir(retificacaoUnit(), true);
+    $v2 = $reaberto->liberarRetificacao(pedidoConferenciaUnit(), 1, 'Marina', 'Marina', 'CRMV-SP 12345', new DateTimeImmutable('2026-11-09T11:00:00Z'), null, true);
+
+    expect($reaberto->emRetificacao())->toBeTrue()
+        ->and($v2->versao)->toBe(2)
+        ->and($v2->emRetificacao())->toBeFalse()
+        ->and($v2->retificacao?->motivo)->toBe('Potássio digitado errado')
+        ->and($v2->codigoAcesso)->toEqual($v1->codigoAcesso)
+        ->and($v2->versaoFormatada())->toBe('L-00001 v2')
+        ->and($v1->versaoFormatada())->toBe('L-00001');
+});
+
+it('só o RT reabre o laudo e exige motivo', function (): void {
+    $v1 = liberarUnit(pedidoConferenciaUnit());
+    expect(fn () => $v1->reabrir(retificacaoUnit(), false))->toThrow(ErroDeLiberacao::class, 'Só o responsável técnico retifica laudos.')
+        ->and(fn () => retificacaoUnit(' '))->toThrow(ErroDeLiberacao::class, 'Diga o motivo da retificação');
+});
+
+it('não reabre duas vezes nem libera versão sem reabrir', function (): void {
+    $v1 = liberarUnit(pedidoConferenciaUnit());
+    expect(fn () => $v1->reabrir(retificacaoUnit(), true)->reabrir(retificacaoUnit(), true))->toThrow(ErroDeLiberacao::class, 'já está aberto')
+        ->and(fn () => $v1->liberarRetificacao(pedidoConferenciaUnit(), 1, 'M', 'M', 'R', new DateTimeImmutable, null, true))->toThrow(ErroDeLiberacao::class, 'Reabra o laudo');
+});
+
+it('a versão nova passa pelas mesmas conferências', function (): void {
+    $reaberto = liberarUnit(pedidoConferenciaUnit())->reabrir(retificacaoUnit(), true);
+    $reaberto->liberarRetificacao(pedidoConferenciaUnit(critico: true), 1, 'M', 'M', 'R', new DateTimeImmutable, null, true);
+})->throws(ErroDeLiberacao::class, 'Registre o aviso do valor crítico');

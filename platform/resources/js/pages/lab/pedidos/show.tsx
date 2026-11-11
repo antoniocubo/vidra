@@ -14,7 +14,8 @@ import {
     useFlashToast,
 } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BuscaDeExame, type Exame } from './busca-de-exame';
@@ -54,7 +55,16 @@ type Props = {
     novaAmostra: boolean;
     imprimir: boolean;
     entrega: { pdfPronto: boolean; pdfErro: string | null; whatsapp: string | null; link: string; entregas: string[] } | null;
-    laudo: { numero: string; rt: string; registro: string; usuario: string; quando: string; codigo: string } | null;
+    laudo: {
+        numero: string;
+        rt: string;
+        registro: string;
+        usuario: string;
+        quando: string;
+        codigo: string;
+        reabertoMotivo: string | null;
+        versoes: { versao: number; em: string; por: string; motivo: string | null; pdf: string | null }[];
+    } | null;
 };
 type Etapa = 'done' | 'current' | 'todo';
 
@@ -71,6 +81,9 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
 
 export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaAmostra }: Props) {
     const flash = useFlashToast();
+    const { laboratorio } = usePage<SharedData>().props;
+    const [retificar, setRetificar] = useState(false);
+    const retificacao = useForm({ motivo: '' });
     const [cancelar, setCancelar] = useState<{ item?: string; nome: string } | null>(null);
     const cancelamento = useForm({ motivo: '' });
     const inclusao = useForm({ exame_id: '' });
@@ -194,6 +207,65 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
                 </div>
                 {laudo && (
                     <Card title={`Laudo ${laudo.numero}`}>
+                        {laudo.reabertoMotivo ? (
+                            <Alert tone="warn" title={`Laudo em retificação · ${laudo.reabertoMotivo}`}>
+                                <Link className="underline" href={route('lab.liberacao.index', { pedido: pedido.id })}>
+                                    Ir para a liberação
+                                </Link>
+                            </Alert>
+                        ) : (
+                            laboratorio?.eRt && (
+                                <Button variant="secondary" onClick={() => setRetificar(true)}>
+                                    Retificar laudo
+                                </Button>
+                            )
+                        )}
+                        <ConfirmDialog
+                            open={retificar}
+                            onOpenChange={setRetificar}
+                            title="Retificar laudo?"
+                            description="A versão atual continua valendo até você liberar a nova. Quem já recebeu o laudo recebe a nova versão."
+                            confirmLabel="Retificar laudo"
+                            loading={retificacao.processing}
+                            onConfirm={() =>
+                                retificacao.post(route('lab.pedidos.laudo.retificar', { pedido: pedido.id }), {
+                                    preserveScroll: true,
+                                    onSuccess: () => setRetificar(false),
+                                })
+                            }
+                        >
+                            <FormField id="motivo-retificacao" label="Motivo da retificação" error={retificacao.errors.motivo}>
+                                <TextInput
+                                    id="motivo-retificacao"
+                                    className="h-11"
+                                    required
+                                    maxLength={500}
+                                    value={retificacao.data.motivo}
+                                    onChange={(e) => retificacao.setData('motivo', e.target.value)}
+                                />
+                            </FormField>
+                            {Object.entries(retificacao.errors)
+                                .filter(([k]) => k !== 'motivo')
+                                .map(([k, v]) => (
+                                    <p key={k} role="alert" className="text-crit-600">
+                                        {v}
+                                    </p>
+                                ))}
+                        </ConfirmDialog>
+                        <div className="my-4 space-y-2">
+                            <h3 className="font-semibold">Histórico de versões</h3>
+                            {laudo.versoes.map((v) => (
+                                <p key={v.versao} className="text-sm">
+                                    Versão {v.versao} · {v.em} · {v.por}
+                                    {v.motivo && ` · ${v.motivo}`}{' '}
+                                    {v.pdf && (
+                                        <a className="text-primary underline" href={v.pdf}>
+                                            Baixar PDF da versão {v.versao}
+                                        </a>
+                                    )}
+                                </p>
+                            ))}
+                        </div>
                         <DetailList
                             items={[
                                 { term: 'Liberado por', value: `${laudo.usuario} · RT ${laudo.rt} · ${laudo.registro}` },
@@ -308,7 +380,7 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
                                 key: 'acoes',
                                 header: 'Ações',
                                 cell: (i) =>
-                                    i.situacao !== 'cancelado' && i.situacao !== 'liberado' ? (
+                                    pedido.podeCancelar && i.situacao !== 'cancelado' && i.situacao !== 'liberado' ? (
                                         <Button variant="ghost" onClick={() => abrirCancelamento({ item: i.id, nome: i.nome })}>
                                             Cancelar exame
                                         </Button>

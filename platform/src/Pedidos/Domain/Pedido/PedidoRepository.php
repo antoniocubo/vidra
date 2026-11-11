@@ -25,6 +25,9 @@ interface PedidoRepository
 
     public function porProtocolo(Protocolo $protocolo): ?Pedido;
 
+    /** O laudo já saiu (mesmo que esteja em retificação): o pedido não muda mais. */
+    public function temLaudo(PedidoId $id): bool;
+
     /**
      * @param  list<string>  $ids
      * @return array<string, Pedido> indexados pelo id

@@ -16,7 +16,7 @@ final class LaudoLiberadoMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Laudo do '.$this->laudo->paciente['nome'].' · '.$this->laudo->laboratorio['nome']);
+        return new Envelope(subject: ($this->laudo->versao > 1 ? 'Laudo retificado de ' : 'Laudo do ').$this->laudo->paciente['nome'].' · '.$this->laudo->laboratorio['nome'].($this->laudo->versao > 1 ? ' · '.$this->laudo->retificacao?->motivo : ''));
     }
 
     public function content(): Content

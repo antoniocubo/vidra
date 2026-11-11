@@ -18,7 +18,7 @@ use Vidra\Laudos\Domain\ResponsavelTecnico;
 
 final class LiberacaoController extends ResultadosController
 {
-    public function index(Request $request, FilaDeLiberacao $fila, ObterConferencia $obter, ResponsavelTecnico $rt): Response
+    public function index(Request $request, FilaDeLiberacao $fila, ObterConferencia $obter, ResponsavelTecnico $rt, \Vidra\Laudos\Application\LaudoDoPedido $laudo): Response
     {
         $request->validate(['pedido' => ['nullable', 'uuid']]);
         $pedidos = $fila();
@@ -30,10 +30,18 @@ final class LiberacaoController extends ResultadosController
             foreach ($p->resultados as $r) {
                 $linhas[] = ['id' => $r->id, 'itemId' => $r->itemId, 'exame' => $r->exame, 'nome' => $r->nome, 'valor' => $r->valor, 'unidade' => $r->unidade, 'classificacao' => $r->classificacao, 'referencia' => $r->referencia, 'digitador' => $r->digitador, 'digitadoEm' => $this->data($r->digitadoEm, 'd/m/Y H:i'), 'anterior' => $r->anterior, 'anteriorEm' => $this->data($r->anteriorEm), 'delta' => $r->delta, 'percentual' => $r->percentual, 'avisado' => $r->avisado(), 'destinatario' => $r->aviso?->destinatario];
             }
-            $selecionado = ['id' => $p->id, 'paciente' => $p->paciente, 'protocolo' => $p->protocolo, 'solicitante' => $p->solicitante, 'telefone' => $p->telefoneCritico, 'itens' => $p->itens, 'resultados' => $linhas, 'pronto' => $p->pronto()];
+            $atual = $laudo($id);
+            $selecionado = ['retificacao' => $atual?->reabertoMotivo, 'proximaVersao' => ($atual->versao ?? 0) + 1, 'id' => $p->id, 'paciente' => $p->paciente, 'protocolo' => $p->protocolo, 'solicitante' => $p->solicitante, 'telefone' => $p->telefoneCritico, 'itens' => $p->itens, 'resultados' => $linhas, 'pronto' => $p->pronto()];
         }
 
-        return Inertia::render('lab/liberacao/index', ['fila' => array_map(fn ($p): array => ['id' => $p->id, 'protocolo' => $p->protocolo, 'paciente' => $p->paciente, 'solicitante' => $p->solicitante, 'criticos' => count(array_filter($p->resultados, fn ($r): bool => $r->critico())), 'alterados' => count(array_filter($p->resultados, fn ($r): bool => in_array($r->classificacao, ['alto', 'baixo'], true)))], $pedidos), 'selecionado' => $selecionado, 'eRt' => $rt->ehRt((int) $request->user()?->getAuthIdentifier())]);
+        return Inertia::render('lab/liberacao/index', ['fila' => array_map(fn ($p): array => ['retificacao' => $laudo($p->id)?->reabertoMotivo, 'id' => $p->id, 'protocolo' => $p->protocolo, 'paciente' => $p->paciente, 'solicitante' => $p->solicitante, 'criticos' => count(array_filter($p->resultados, fn ($r): bool => $r->critico())), 'alterados' => count(array_filter($p->resultados, fn ($r): bool => in_array($r->classificacao, ['alto', 'baixo'], true)))], $pedidos), 'selecionado' => $selecionado, 'eRt' => $rt->ehRt((int) $request->user()?->getAuthIdentifier())]);
+    }
+
+    public function retificar(\App\Http\Requests\Lab\RetificarLaudoRequest $request, string $pedido, \Vidra\Laudos\Application\ReabrirLaudo $reabrir): RedirectResponse
+    {
+        $this->executar(fn () => $reabrir($request->toInput($pedido)));
+
+        return back()->with('success', 'Laudo aberto para retificação.');
     }
 
     public function aviso(RegistrarAvisoRequest $request, string $pedido, RegistrarAvisoDeValorCritico $registrar): RedirectResponse

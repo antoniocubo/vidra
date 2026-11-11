@@ -29,6 +29,9 @@ final readonly class IncluirExame
 
         return $this->transacao->executar(function () use ($input, $laboratorioId): bool {
             $pedido = $this->pedidos->porId(new PedidoId($input->pedido)) ?? throw PedidoNaoEncontrado::para();
+            if ($this->pedidos->temLaudo($pedido->id)) {
+                throw \Vidra\Pedidos\Domain\Pedido\Exceptions\PedidoInvalido::jaLiberado();
+            }
             if ($pedido->laboratorioId !== $laboratorioId) {
                 throw PedidoNaoEncontrado::para();
             }

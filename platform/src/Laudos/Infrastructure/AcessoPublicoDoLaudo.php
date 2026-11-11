@@ -30,9 +30,9 @@ final readonly class AcessoPublicoDoLaudo implements AcessoPublico
         });
     }
 
-    public function pdf(CodigoDeAcesso $codigo): DownloadDoLaudo
+    public function pdf(CodigoDeAcesso $codigo, ?int $versao = null): DownloadDoLaudo
     {
-        return $this->noLaboratorio($codigo, fn (string $pedido): DownloadDoLaudo => $this->entrega->pdf($pedido));
+        return $this->noLaboratorio($codigo, fn (string $pedido): DownloadDoLaudo => $this->entrega->pdf($pedido, $versao));
     }
 
     /** @template T

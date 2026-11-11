@@ -9,8 +9,11 @@ use Vidra\Laudos\Infrastructure\Jobs\EntregarLaudo;
 
 final readonly class DespacharEntregaDoLaudo
 {
+    public function __construct(private \Vidra\Laudos\Application\MontarLaudo\MontarLaudo $montar) {}
+
     public function handle(LaudoLiberado $evento): void
     {
-        EntregarLaudo::dispatch($evento->laboratorioId, $evento->pedidoId);
+        ($this->montar)($evento->pedidoId);
+        EntregarLaudo::dispatch($evento->laboratorioId, $evento->pedidoId, 'completa', $evento->versao);
     }
 }
