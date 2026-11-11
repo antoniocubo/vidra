@@ -17,6 +17,7 @@ final class LaudosServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(\Vidra\Laudos\Domain\ConsultaDeLaudos::class, ConsultaDeLaudos::class);
         $this->app->bind(\Vidra\Laudos\Domain\GeradorDePdf::class, GotenbergGeradorDePdf::class);
         $this->app->bind(\Vidra\Laudos\Domain\ArquivoDoLaudo::class, ArquivoDoLaudoLocal::class);
         $this->app->bind(\Vidra\Laudos\Domain\FonteDoLaudo::class, FonteDosPedidos::class);

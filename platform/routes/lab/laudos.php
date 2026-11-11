@@ -13,6 +13,7 @@ Route::middleware('area:liberacao')->group(function (): void {
 });
 
 Route::middleware('area:laudos')->group(function (): void {
+    Route::get('laudos', [App\Http\Controllers\Lab\LaudoController::class, 'index'])->name('laudos.index');
     Route::get('pedidos/{pedido}/laudo/versoes/{versao}.pdf', [App\Http\Controllers\Lab\EntregaLaudoController::class, 'pdf'])->whereUuid('pedido')->whereNumber('versao')->name('pedidos.laudo.versao.pdf');
     Route::get('pedidos/{pedido}/laudo.pdf', [App\Http\Controllers\Lab\EntregaLaudoController::class, 'pdf'])->whereUuid('pedido')->name('pedidos.laudo.pdf');
     Route::post('pedidos/{pedido}/laudo/reenviar', [App\Http\Controllers\Lab\EntregaLaudoController::class, 'reenviar'])->whereUuid('pedido')->middleware('throttle:5,1')->name('pedidos.laudo.reenviar');

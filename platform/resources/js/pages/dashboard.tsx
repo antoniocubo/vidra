@@ -63,8 +63,8 @@ export default function Dashboard({ painel, primeiroNome }: Props) {
         {
             label: 'Laudos liberados hoje',
             value: i.laudosHoje,
-            area: 'pedidos',
-            href: route('lab.pedidos.index', { data: painel.data, situacao: 'liberado' }),
+            area: 'laudos',
+            href: route('lab.laudos.index', { de: painel.data, ate: painel.data }),
         },
     ];
 
