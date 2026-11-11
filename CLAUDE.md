@@ -28,6 +28,7 @@ docker compose -f ../infra/docker-compose.yml up -d   # Postgres, Redis, Gotenbe
 composer dev            # servidor, fila, logs e Vite juntos
 php artisan test        # Pest: Unit, Feature e Arch (os de Postgres aparecem como pulados)
 composer test:postgres  # suíte inteira no Postgres do compose + testes de RLS (banco vidra_testes)
+npm run e2e             # Playwright: do cadastro do laboratório ao laudo do tutor (precisa do compose: Mailpit e Gotenberg)
 composer lint           # Pint (checagem) + PHPStan nível 8
 composer fix            # Pint corrigindo
 npm run types           # tsc --noEmit
@@ -123,7 +124,8 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 - **Unit** (`tests/Unit/<Módulo>`): domínio e casos de uso, sem banco, com repositório em memória (`tests/Support/InMemory*Repository`).
 - **Feature** (`tests/Feature/<Módulo>`): HTTP + banco, um teste por fluxo e por erro de negócio.
 - **Arch** (`tests/Arch`): regras de dependência.
-- Playwright para fluxos críticos de ponta a ponta (pedido → laudo) quando as telas existirem.
+- **E2E** (`tests/e2e`, Playwright): o fluxo do cadastro do laboratório ao laudo aberto pelo tutor, com e-mail no Mailpit. Usa um banco próprio (`database/e2e.sqlite`, recriado a cada execução) e o `.env.e2e`.
+- O CI fica em `/.github/workflows` (na raiz do monorepo): lint que só confere, testes no SQLite, `composer test:postgres` e o e2e.
 - Nome do teste em português, descrevendo o comportamento: `it('não deixa repetir o CRMV na mesma UF')`.
 
 ### Front-end
@@ -163,7 +165,7 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
 ## Decisões de produto
 
 - **Segmento:** laboratórios veterinários primeiro (Vidra Pet); clínicos humanos na fase 3 (Vidra Clínica), no mesmo código.
-- **Diferenciais:** nuvem com preço acessível, laudo entregue por e-mail e link, IA no fluxo.
+- **Diferenciais:** nuvem com preço acessível, laudo entregue por e-mail e link, IA no fluxo (a IA ficou fora do MVP, decidido em 10/11/2026).
 - **Superfícies (todas na mesma aplicação, separadas por subdomínio):**
   - `app.vidralab.com.br`: portal do laboratório.
   - `vet.vidralab.com.br`: acesso do veterinário solicitante.
@@ -172,11 +174,14 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
 - **Veterinário:** uma pessoa só no Vidra, identificada pelo e-mail e pelo CRMV (único por UF). Cada laboratório cria um **vínculo** (`laboratorio_veterinario`) com dados próprios: quem paga, telefone para valor crítico, se vê os pedidos dos colegas da clínica. Com mais de um laboratório, ele escolhe em qual entrar depois do login e troca pelo cabeçalho. Nunca mostra laudos de laboratórios misturados.
 - **Tutor e animal:** o tutor autoriza ou não receber laudo por e-mail (LGPD, registrado com data, hora e atendente). O animal define a faixa de referência (espécie, idade, sexo).
 - **Fluxo:** pedido → amostra/triagem → bancada → liberação (só o RT assina) → laudo PDF → entrega → fatura mensal.
-- **RT:** responsável técnico, veterinário com CRMV. É o único papel que libera e assina laudos.
+- **RT:** responsável técnico, veterinário com CRMV. É o único papel que libera e assina laudos. Corrigir um laudo liberado é **retificar**: o RT reabre com motivo, a versão publicada continua valendo até a nova (v2, v3...) ser liberada, o número e o código de acesso não mudam e quem já recebeu recebe de novo.
+- **Equipe e papéis:** admin, RT, bancada e recepção, convidados por e-mail (link de uso único, 7 dias). Cada papel abre só as suas áreas (`Vidra\Acesso\Domain\Papel`). O laboratório nunca fica sem admin e ninguém altera o próprio papel.
+- **Pedido:** cancela exame ou o pedido inteiro com motivo, e inclui exame, só enquanto não há laudo emitido (mesmo em retificação).
 - **Entrega do laudo:** e-mail (Amazon SES), acesso do veterinário, link com código de acesso para o tutor, botão manual de compartilhar no WhatsApp (link `wa.me`, sem API). WhatsApp automático fica para a fase 2.
 - **Etiquetas:** Code 128 (`picqer/php-barcode-generator`). O leitor USB funciona como teclado: campo com foco que envia no Enter. No MVP, a impressão é um PDF no tamanho da etiqueta; QZ Tray ou o agente Go depois.
-- **IA:** Claude Sonnet 5.5 (`claude-sonnet-5-5`) lê a foto do pedido; Claude Haiku 5.5 (`claude-haiku-5-5`) para textos curtos (resumo para o tutor). Regras de referência, delta check e valor crítico são motor próprio, não IA. A IA aponta; quem libera é o RT.
-- **Cobrança do Vidra:** por pedido (atendimento), não por exame. Bancada R$ 290 (600 pedidos, 3 usuários), Laboratório R$ 590 (2.000, 10 usuários), Rede R$ 1.190 (6.000, ilimitado, 5 unidades). Excedente R$ 0,25 por pedido, sem taxa de implantação, 14 dias de teste, anual com 2 meses grátis. Clínicas, veterinários e tutores não pagam o Vidra.
+- **IA (fora do MVP):** Claude Sonnet 5.5 (`claude-sonnet-5-5`) lê a foto do pedido; Claude Haiku 5.5 (`claude-haiku-5-5`) para textos curtos (resumo para o tutor). Regras de referência, delta check e valor crítico são motor próprio, não IA. A IA aponta; quem libera é o RT.
+- **Cobrança do Vidra:** por pedido (atendimento), não por exame. Bancada R$ 290 (600 pedidos, 3 usuários), Laboratório R$ 590 (2.000, 10 usuários), Rede R$ 1.190 (6.000, ilimitado, 5 unidades). Excedente R$ 0,25 por pedido, sem taxa de implantação, 14 dias de teste, anual com 2 meses grátis. Clínicas, veterinários e tutores não pagam o Vidra. Cobrança pelo **Asaas** (boleto, Pix ou cartão; decidido em 10/11/2026). Teste acabado sem pagamento, ou atraso além de 5 dias, deixa o laboratório **só para consulta**: vê e baixa tudo, não abre pedido novo.
+- **Fatura das clínicas:** mensal, por clínica (ou veterinário que paga), com os pedidos liberados no mês anterior pelo preço gravado no item, fechada no dia de fechamento da clínica (ou no primeiro dia depois, se o agendador falhou). Enviada, não muda: ajuste só por nota de crédito. Baixa manual.
 
 ## Decisões técnicas
 
@@ -185,14 +190,18 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
   - **Laboratório atual:** o middleware `laboratorio` (`DefinirLaboratorioAtual`) lê o escolhido da sessão, confere o vínculo em `laboratorio_usuario` a cada requisição e define `ContextoLaboratorio`. O domínio enxerga só a interface `Vidra\Shared\Domain\Tenancy\LaboratorioAtual`. Jobs e comandos usam `ContextoLaboratorio::executarComo()`.
   - **Eloquent:** o trait `PertenceAoLaboratorio` filtra toda consulta e preenche o `laboratorio_id`. Sem laboratório definido, lança `LaboratorioNaoDefinido` em vez de devolver tudo.
   - **Postgres:** `Rls::isolarPorLaboratorio()` liga RLS com `FORCE` e uma policy que compara com `app.laboratorio_id` (definido pelo `ContextoLaboratorio`). Um teste falha se alguma tabela com `laboratorio_id` ficar sem RLS.
-  - **Global, sem RLS:** `users`, `laboratorios`, `veterinarios` (a pessoa) e `laboratorio_usuario` (o mapa de acessos). O que cruza laboratórios (lista de acessos, link do tutor, fatura mensal) usa só a conexão `config('vidra.conexao_sistema')`.
+  - **Global, sem RLS:** `users`, `laboratorios`, `veterinarios` (a pessoa), `laboratorio_usuario` (o mapa de acessos), `contas_veterinario`, os convites (`convites`, `convites_veterinario`, aceitos antes de o convidado pertencer ao laboratório) e `cobrancas_vidra` (escrita pelo webhook do Asaas). A lista fica em `tests/Postgres/IsolamentoPorLaboratorioTest.php`, sempre com o porquê. O que cruza laboratórios (lista de acessos, link do tutor, fatura mensal) usa só a conexão `config('vidra.conexao_sistema')`.
   - Tutor e animal são cadastros de cada laboratório.
 - IDs UUID v7 gerados pelo repositório (`nextIdentity()`).
 - Redis + Horizon para filas. Gotenberg para gerar o PDF do laudo.
-- Assinatura do laudo com certificado ICP-Brasil A1, padrão PAdES.
+- Assinatura ICP-Brasil (PAdES) do laudo: fora do MVP, não obrigatória (decidido em 10/11/2026).
+- **Papéis:** enum `Papel` sobre `laboratorio_usuario.papel` e o middleware `area:<área>` (`ExigirArea`) em cada grupo de rotas; o menu e o painel leem `laboratorio.areas`. Sem `spatie/laravel-permission`. Liberar laudo depende também de `e_rt`.
+- **Acesso do veterinário:** guard `vet` com tabela própria (`contas_veterinario`), reset de senha próprio e o middleware `laboratorio.vet` (`DefinirLaboratorioDoVeterinario`), que confere o vínculo a cada requisição e define a tenancy de um laboratório por vez. Ele vê os pedidos em que o vínculo dele é o solicitante (e os dos colegas da mesma clínica, se o vínculo deixa). Com dois guards, o código da equipe pede `$request->user('web')`.
+- **Subdomínios:** `routes/web.php` põe cada superfície no seu host (`VIDRA_DOMINIO_SITE`, `_APP`, `_VET`, `_LAUDO`). Sem eles (local e testes), tudo responde no mesmo host com `/vet` e `/laudo` de prefixo. `SESSION_DOMAIN` vazio: cookie por host.
+- **Trilha de auditoria:** tabela própria (`registros_auditoria`, módulo `Auditoria` do núcleo), imutável, com RLS; sem `spatie/laravel-activitylog`.
 - S3 (região sa-east-1) para arquivos. SES com SPF e DKIM para e-mail.
-- `spatie/laravel-permission` para papéis e `spatie/laravel-activitylog` para trilha de auditoria (a instalar quando o primeiro caso de uso pedir).
-- Hospedagem: Laravel Cloud ou AWS (a decidir).
+- **Hospedagem:** um VPS na Hetzner com Docker Compose (decidido em 10/11/2026): FrankenPHP (app, Horizon e agendador na mesma imagem), Postgres, Redis e Gotenberg só na rede interna, Caddy com TLS. No Postgres de produção o superusuário é só o `postgres`; o `vidra` (dono das tabelas, migrations e conexão de sistema) é `NOSUPERUSER BYPASSRLS`. Passo a passo e checklist do RLS em `docs/deploy.md`.
+- Sentry para erros (sem dados pessoais) e backup diário do Postgres para um bucket S3 separado.
 
 ## Marca
 
@@ -206,8 +215,8 @@ Para economizar tokens do Claude, tarefas de implementação bem delimitadas (um
 ## Pendências conhecidas
 
 - O PHPStan tem uma baseline (`platform/phpstan-baseline.neon`) só com erros do código de autenticação do starter kit. Ela some quando a autenticação multi-laboratório for reescrita. Não adicione nada novo à baseline.
-- As telas de auth e settings ainda estão em inglês (starter kit).
-- Roteamento por subdomínio: hoje `routes/lab.php` está sem `Route::domain()`.
-- Fora do MVP construído em 08/11/2026 (a fazer): portal do veterinário (`vet.`), e-mail de resumo diário para o veterinário, assinatura ICP-Brasil (PAdES), IA (pedido por foto e resumo para o tutor), fatura mensal das clínicas, contagem diferencial e campos calculados do hemograma.
+- Fora do MVP fechado em 11/11/2026 (a fazer): e-mail de resumo diário para o veterinário (a opção saiu da tela até existir), assinatura ICP-Brasil (PAdES), IA (pedido por foto e resumo para o tutor), contagem diferencial e campos calculados do hemograma, WhatsApp automático.
+- Precisam de alguém de fora: revisão jurídica da Política de privacidade e dos Termos de uso (com marcadores `[RAZÃO SOCIAL E CNPJ DA VIDRA]`, `[E-MAIL DO ENCARREGADO]` etc.), e cadastrar o webhook no painel do Asaas. Os cartões dos planos (landing e "Plano e cobrança") ainda prometem "Pedido lido da foto pela IA".
 - Valores provisórios que o laboratório precisa confirmar: limite de 50% do delta check (`Bancada`) e os cortes de idade dos perfis de referência (cão idoso a partir de 7 anos, gato a partir de 10, equino a partir de 15).
-- Débitos pequenos: `PacienteCard` genérico para o novo pedido não usar o `AnimalCard` da linha Pet; o adaptador `CatalogoDeExames` do `Pedidos` captura uma exceção do domínio do `Catalogo`; "Laudos liberados hoje" no painel filtra pela data de abertura do pedido; a busca de exame no novo pedido tira o `?animal=` da URL.
+- Sem board no protótipo (as telas seguiram as existentes): Equipe, Retificação, Plano e cobrança, Lista de laudos.
+- Débitos pequenos: `PacienteCard` genérico para o novo pedido não usar o `AnimalCard` da linha Pet; o adaptador `CatalogoDeExames` do `Pedidos` captura uma exceção do domínio do `Catalogo`; `PacientesVeterinaria::resumos()` faz duas consultas por paciente (listas de pedidos e laudos); a lista do veterinário olha os 300 pedidos mais recentes do vínculo (`shortcut` em `PedidosDoVeterinario`); três `RelogioSistema` iguais (Acesso, Pedidos, Veterinaria) e três cópias da trava de `sequencias` (protocolo, laudo, fatura) que podiam ir para o `Shared`; no webhook do Asaas, marcar a cobrança paga e estender o plano são duas escritas sem transação comum.
