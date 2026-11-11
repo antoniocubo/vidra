@@ -388,10 +388,13 @@ export default function Inicio({ planos }: { planos: Plano[] }) {
                         <span>Vidra Clínica, para laboratórios de análises clínicas: em breve</span>
                     </span>
                     <span className="flex flex-wrap gap-4">
-                        {['Privacidade', 'Termos', 'Contato'].map((texto) => (
-                            <a key={texto} href="#" className={cn(foco, 'text-brand-500 hover:text-primary inline-flex min-h-11 items-center')}>
+                        {[
+                            ['Privacidade', route('site.privacidade')],
+                            ['Termos', route('site.termos')],
+                        ].map(([texto, href]) => (
+                            <Link key={texto} href={href} className={cn(foco, 'text-brand-500 hover:text-primary inline-flex min-h-11 items-center')}>
                                 {texto}
-                            </a>
+                            </Link>
                         ))}
                     </span>
                 </div>

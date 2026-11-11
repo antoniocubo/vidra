@@ -160,12 +160,12 @@ export default function Login({ status, canResetPassword, vetUrl }: LoginProps) 
                 <footer className="text-muted-foreground flex w-full max-w-[400px] flex-wrap justify-between gap-2 text-xs">
                     <span className="font-mono">app.vidralab.com.br</span>
                     <span className="flex gap-4">
-                        <a href="/privacidade" className={linkClasses}>
+                        <Link href={route('site.privacidade')} className={linkClasses}>
                             Privacidade
-                        </a>
-                        <a href="/ajuda" className={linkClasses}>
-                            Ajuda
-                        </a>
+                        </Link>
+                        <Link href={route('site.termos')} className={linkClasses}>
+                            Termos
+                        </Link>
                     </span>
                 </footer>
             </main>

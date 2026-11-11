@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Lab\PainelController;
 use App\Http\Controllers\Site\InicioController;
+use App\Http\Controllers\Site\PrivacidadeController;
+use App\Http\Controllers\Site\TermosController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', InicioController::class)->name('home');
+Route::get('privacidade', PrivacidadeController::class)->name('site.privacidade');
+Route::get('termos', TermosController::class)->name('site.termos');
 
 Route::middleware(['auth', 'laboratorio'])->group(function (): void {
     Route::get('dashboard', PainelController::class)->name('dashboard');
