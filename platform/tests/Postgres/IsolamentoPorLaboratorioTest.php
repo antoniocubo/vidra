@@ -18,6 +18,7 @@ use Vidra\Shared\Infrastructure\Tenancy\Rls;
 const TABELAS_SEM_RLS = [
     'convites', // global: o convidado aceita pelo hash antes de ter acesso ao laboratório
     'convites_veterinario', // global pelo mesmo motivo: o veterinário aceita antes de ter sessão
+    'cobrancas_vidra', // cobrança do Vidra ao laboratório: o webhook do Asaas escreve sem laboratório atual
     'laboratorio_usuario', // mapa de acessos: lido antes de existir um laboratório atual
 ];
 

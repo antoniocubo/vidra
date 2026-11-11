@@ -18,6 +18,12 @@ return [
 
     'gotenberg' => ['url' => env('GOTENBERG_URL', 'http://127.0.0.1:3001')],
 
+    'asaas' => [
+        'chave' => env('ASAAS_API_KEY'),
+        'ambiente' => env('ASAAS_AMBIENTE', 'sandbox'), // sandbox | producao
+        'webhook_token' => env('ASAAS_WEBHOOK_TOKEN'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

@@ -16,7 +16,7 @@ enum Papel: string
     case Recepcao = 'recepcao';
 
     /** Áreas do portal do laboratório; cada grupo de rotas exige uma. */
-    public const array AREAS = ['painel', 'laudos', 'pedidos', 'cadastros', 'amostras', 'bancada', 'liberacao', 'exames', 'equipe', 'financeiro'];
+    public const array AREAS = ['painel', 'laudos', 'pedidos', 'cadastros', 'amostras', 'bancada', 'liberacao', 'exames', 'equipe', 'financeiro', 'assinatura'];
 
     /** @return list<string> */
     public function areas(): array

@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Vidra\Acesso\Application\Assinatura\SituacaoDaAssinaturaAtual;
 use Vidra\Acesso\Domain\LaboratorioDoUsuario;
 use Vidra\Acesso\Domain\Papel;
 
@@ -52,6 +53,15 @@ class HandleInertiaRequests extends Middleware
             // Preenchidos pelo middleware 'laboratorio'; nas telas públicas ficam nulos.
             'laboratorio' => fn (): ?array => $this->laboratorio($request->attributes->get('laboratorio')),
             'laboratorios' => fn (): array => array_values(array_filter(array_map($this->laboratorio(...), (array) $request->attributes->get('laboratorios', [])))),
+            'assinatura' => function () use ($request): ?array {
+                $laboratorio = $request->attributes->get('laboratorio');
+                if (! $laboratorio instanceof LaboratorioDoUsuario) {
+                    return null;
+                }
+                $situacao = ExigirAssinaturaAtiva::situacao($request, app(SituacaoDaAssinaturaAtual::class));
+
+                return ['situacao' => $situacao['situacao'], 'diasRestantes' => $situacao['diasRestantes'], 'deveAvisar' => $situacao['deveAvisar']];
+            },
             'flash' => [
                 'success' => fn (): ?string => $request->session()->get('success'),
             ],

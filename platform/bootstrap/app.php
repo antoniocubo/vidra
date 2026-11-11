@@ -19,11 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'laboratorio' => DefinirLaboratorioAtual::class,
             'area' => App\Http\Middleware\ExigirArea::class,
+            'assinatura' => App\Http\Middleware\ExigirAssinaturaAtiva::class,
             'laboratorio.vet' => App\Http\Middleware\DefinirLaboratorioDoVeterinario::class,
         ]);
         // O acesso vet tem login próprio; o resto vai para o login da equipe.
         $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request): string => $request->routeIs('vet.*') ? route('vet.entrar') : route('login'));
         $middleware->redirectUsersTo(fn (Illuminate\Http\Request $request): string => $request->routeIs('vet.*') ? route('vet.inicio') : route('dashboard'));
+        $middleware->validateCsrfTokens(except: ['webhooks/asaas']);
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

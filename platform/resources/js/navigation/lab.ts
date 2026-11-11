@@ -1,6 +1,7 @@
 import {
     Building2,
     ClipboardList,
+    CreditCard,
     FileCheck,
     FileText,
     FlaskConical,
@@ -28,6 +29,7 @@ export interface LabNavItem {
         | 'lab.clinicas.index'
         | 'lab.exames.index'
         | 'lab.equipe.index'
+        | 'lab.assinatura.index'
         | 'lab.financeiro.index'
         | null;
     /** Área do papel que abre o item (Vidra\Acesso\Domain\Papel). */
@@ -46,6 +48,7 @@ export const labNavigation: LabNavItem[] = [
     { title: 'Clínicas', icon: Building2, routeName: 'lab.clinicas.index', area: 'cadastros' },
     { title: 'Exames', icon: ListChecks, routeName: 'lab.exames.index', area: 'exames' },
     { title: 'Equipe', icon: Users, routeName: 'lab.equipe.index', area: 'equipe' },
+    { title: 'Plano e cobrança', icon: CreditCard, routeName: 'lab.assinatura.index', area: 'assinatura' },
     { title: 'Financeiro', icon: Wallet, routeName: 'lab.financeiro.index', area: 'financeiro' },
 ];
 

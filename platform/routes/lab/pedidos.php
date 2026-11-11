@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('area:pedidos')->group(function (): void {
     Route::get('pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
-    Route::get('pedidos/novo', [PedidoController::class, 'create'])->name('pedidos.create');
-    Route::post('pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
+    Route::get('pedidos/novo', [PedidoController::class, 'create'])->middleware('assinatura')->name('pedidos.create');
+    Route::post('pedidos', [PedidoController::class, 'store'])->middleware('assinatura')->name('pedidos.store');
     Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->whereUuid('pedido')->name('pedidos.cancelar');
     Route::post('pedidos/{pedido}/itens/{item}/cancelar', [PedidoController::class, 'cancelarExame'])->whereUuid(['pedido', 'item'])->name('pedidos.itens.cancelar');
     Route::post('pedidos/{pedido}/itens', [PedidoController::class, 'incluirExame'])->whereUuid('pedido')->name('pedidos.itens.store');

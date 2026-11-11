@@ -19,4 +19,5 @@ Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): voi
     require __DIR__.'/lab/laudos.php';
     Route::middleware('area:financeiro')->group(__DIR__.'/lab/financeiro.php');
     Route::middleware('area:equipe')->group(__DIR__.'/lab/equipe.php');
+    Route::middleware('area:assinatura')->group(__DIR__.'/lab/assinatura.php');
 });

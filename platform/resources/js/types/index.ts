@@ -23,8 +23,11 @@ export interface NavItem {
 
 export type Laboratorio = { id: string; nome: string; papel: string; eRt: boolean; areas: string[] };
 
+export type AssinaturaAviso = { situacao: 'em_teste' | 'ativa' | 'atrasada' | 'somente_consulta'; diasRestantes: number; deveAvisar: boolean };
+
 export interface SharedData {
     laboratorio: Laboratorio | null;
+    assinatura: AssinaturaAviso | null;
     laboratorios: Laboratorio[];
     name: string;
     quote: { message: string; author: string };
