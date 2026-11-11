@@ -28,7 +28,17 @@ const descricoes: Record<string, string> = {
     recepcao: 'Cadastra pacientes e solicitantes, abre pedidos e recebe amostras.',
 };
 
-export default function Equipe({ membros, convites, papeis }: { membros: Membro[]; convites: Convite[]; papeis: Papel[] }) {
+export default function Equipe({
+    membros,
+    convites,
+    papeis,
+    mudancas,
+}: {
+    membros: Membro[];
+    convites: Convite[];
+    papeis: Papel[];
+    mudancas: { id: string; em: string; quem: string; detalhe: string }[];
+}) {
     const { auth, errors } = usePage<SharedData>().props;
     const flash = useFlashToast();
     const [convidando, setConvidando] = useState(false);
@@ -159,6 +169,34 @@ export default function Equipe({ membros, convites, papeis }: { membros: Membro[
                         },
                     ]}
                 />
+                <section aria-labelledby="mudancas-equipe">
+                    <h2 id="mudancas-equipe" className="font-display text-xl font-semibold">
+                        Últimas mudanças na equipe
+                    </h2>
+                    {mudancas.length === 0 ? (
+                        <p className="text-muted-foreground mt-4">Nenhuma mudança registrada.</p>
+                    ) : (
+                        <ol className="divide-border divide-y">
+                            {mudancas.map((evento) => (
+                                <li key={evento.id} className="space-y-1 py-4">
+                                    <p className="text-muted-foreground text-sm">
+                                        <time dateTime={evento.em}>
+                                            {new Intl.DateTimeFormat('pt-BR', {
+                                                dateStyle: 'short',
+                                                timeStyle: 'short',
+                                                timeZone: 'America/Sao_Paulo',
+                                            })
+                                                .format(new Date(evento.em))
+                                                .replace(', ', ' ')}
+                                        </time>{' '}
+                                        · {evento.quem}
+                                    </p>
+                                    <p>{evento.detalhe}</p>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
+                </section>
             </div>
             <ConfirmDialog
                 open={convidando}

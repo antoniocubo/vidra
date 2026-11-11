@@ -6,6 +6,7 @@ namespace Vidra\Financeiro\Application\EnviarFatura;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Financeiro\Domain\ArquivosDeFatura;
 use Vidra\Financeiro\Domain\EmissorDeFatura;
 use Vidra\Financeiro\Domain\FaturaInvalida;
@@ -15,7 +16,7 @@ use Vidra\Financeiro\Domain\GeradorDePdfDaFatura;
 /** Executado pela fila. Na primeira vez marca a fatura como enviada; nas seguintes só manda de novo. */
 final readonly class EnviarFatura
 {
-    public function __construct(private FaturaRepository $faturas, private GeradorDePdfDaFatura $gerador, private ArquivosDeFatura $arquivos, private EmissorDeFatura $emissor) {}
+    public function __construct(private FaturaRepository $faturas, private GeradorDePdfDaFatura $gerador, private ArquivosDeFatura $arquivos, private EmissorDeFatura $emissor, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(string $faturaId): void
     {
@@ -33,5 +34,6 @@ final readonly class EnviarFatura
         if ($primeiroEnvio) {
             $this->faturas->save($fatura);
         }
+        ($this->trilha)('fatura_enviada', 'fatura', $faturaId, 'Enviou a fatura');
     }
 }

@@ -114,7 +114,7 @@ it('fecha agora sem esperar o dia de fechamento do pagador', function (): void {
 it('envia a fatura: gera o PDF, guarda, manda e só então marca como enviada', function (): void {
     $c = cenarioDeFatura(pendenteDaClinica());
     (new FecharFaturasDoDia($c->fechador))(dia('2026-12-01 06:00'));
-    $enviar = new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor);
+    $enviar = new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor, Tests\Support\AuditoriaFixa::registrar());
 
     $c->emissor->falhar = true;
     expect(fn () => $enviar('fatura-1'))->toThrow(RuntimeException::class)
@@ -130,7 +130,7 @@ it('envia a fatura: gera o PDF, guarda, manda e só então marca como enviada', 
 it('reenviar manda de novo sem mudar a situação e recusa quem não tem e-mail', function (): void {
     $c = cenarioDeFatura(pendenteDaClinica());
     (new FecharFaturasDoDia($c->fechador))(dia('2026-12-01 06:00'));
-    $enviar = new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor);
+    $enviar = new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor, Tests\Support\AuditoriaFixa::registrar());
     $enviar('fatura-1');
     $enviadaEm = $c->faturas->items['fatura-1']->enviadaEm();
     $c->emissor->enfileiradas = [];
@@ -150,11 +150,11 @@ it('reenviar manda de novo sem mudar a situação e recusa quem não tem e-mail'
 it('registra o pagamento depois do envio e não deixa pagar duas vezes', function (): void {
     $c = cenarioDeFatura(pendenteDaClinica());
     (new FecharFaturasDoDia($c->fechador))(dia('2026-12-01 06:00'));
-    $registrar = new RegistrarPagamento($c->faturas);
+    $registrar = new RegistrarPagamento($c->faturas, Tests\Support\AuditoriaFixa::registrar());
 
     expect(fn () => $registrar('fatura-1', 7))->toThrow(FaturaInvalida::class, 'Envie a fatura');
 
-    (new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor))('fatura-1');
+    (new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor, Tests\Support\AuditoriaFixa::registrar()))('fatura-1');
     $registrar('fatura-1', 7);
 
     expect($c->faturas->items['fatura-1']->pagaPor())->toBe(7)
@@ -165,8 +165,8 @@ it('registra o pagamento depois do envio e não deixa pagar duas vezes', functio
 it('concede crédito e recusa o que passa do total', function (): void {
     $c = cenarioDeFatura(pendenteDaClinica());
     (new FecharFaturasDoDia($c->fechador))(dia('2026-12-01 06:00'));
-    (new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor))('fatura-1');
-    $conceder = new ConcederCredito($c->faturas);
+    (new EnviarFatura($c->faturas, new GeradorDePdfDaFaturaFalso, $c->arquivos, $c->emissor, Tests\Support\AuditoriaFixa::registrar()))('fatura-1');
+    $conceder = new ConcederCredito($c->faturas, Tests\Support\AuditoriaFixa::registrar());
 
     $conceder(new ConcederCreditoInput('fatura-1', 'Exame repetido por falha nossa', 1000, 7));
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\HorizonServiceProvider::class,
+    Vidra\Auditoria\Infrastructure\AuditoriaServiceProvider::class,
     Vidra\Acesso\Infrastructure\AcessoServiceProvider::class,
     Vidra\Bancada\Infrastructure\BancadaServiceProvider::class,
     Vidra\Catalogo\Infrastructure\CatalogoServiceProvider::class,

@@ -24,9 +24,9 @@ use Vidra\Shared\Domain\DomainException;
 
 final class EquipeController extends Controller
 {
-    public function index(ListarEquipe $listar): Response
+    public function index(ListarEquipe $listar, \Vidra\Auditoria\Application\UltimasMudancasDaEquipe $mudancas): Response
     {
-        return Inertia::render('lab/equipe/index', $listar() + ['papeis' => array_map(static fn (Papel $p): array => ['value' => $p->value, 'label' => $p->rotulo()], Papel::cases())]);
+        return Inertia::render('lab/equipe/index', $listar() + ['mudancas' => $mudancas(), 'papeis' => array_map(static fn (Papel $p): array => ['value' => $p->value, 'label' => $p->rotulo()], Papel::cases())]);
     }
 
     public function store(ConvidarPessoaRequest $request, ConvidarPessoa $convidar): RedirectResponse

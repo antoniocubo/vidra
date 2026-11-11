@@ -27,6 +27,15 @@ final class LaudosServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Event::listen(\Vidra\Laudos\Domain\LaudoLiberado::class, function (\Vidra\Laudos\Domain\LaudoLiberado $evento): void {
+            app(\Vidra\Auditoria\Application\RegistrarNaTrilha::class)(
+                $evento->versao > 1 ? 'laudo_retificado' : 'laudo_liberado',
+                'laudo', $evento->laudoId,
+                $evento->versao > 1 ? 'Retificou o laudo · versão '.$evento->versao : 'Liberou o laudo',
+                $evento->pedidoId,
+            );
+        });
+
         \Illuminate\Support\Facades\Event::listen(\Vidra\Laudos\Domain\LaudoLiberado::class, DespacharEntregaDoLaudo::class);
     }
 }

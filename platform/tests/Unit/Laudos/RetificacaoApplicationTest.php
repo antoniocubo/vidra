@@ -82,7 +82,7 @@ beforeEach(function (): void {
         }
     };
     $this->liberar = new LiberarLaudo(new ObterConferencia($this->conferencia), $this->conferencia, $this->laudos, $this->rt, $this->eventos, $this->laboratorio, $this->transacao);
-    $this->reabrir = new ReabrirLaudo($this->laudos, $this->conferencia, $this->rt, $this->transacao, $this->laboratorio);
+    $this->reabrir = new ReabrirLaudo($this->laudos, $this->conferencia, $this->rt, $this->transacao, $this->laboratorio, Tests\Support\AuditoriaFixa::registrar());
     ($this->liberar)(new LiberarLaudoInput('pedido', 1, 'Marina', null));
 });
 

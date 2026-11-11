@@ -6,6 +6,7 @@ namespace Vidra\Bancada\Application;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Bancada\Domain\ErroDeBancada;
 use Vidra\Bancada\Domain\Referencias;
 use Vidra\Bancada\Domain\Resultado;
@@ -16,11 +17,11 @@ use Vidra\Shared\Domain\Transacao;
 
 final readonly class DigitarResultados
 {
-    public function __construct(private ObterTrabalho $obter, private Trabalhos $trabalhos, private Referencias $referencias, private ResultadoRepository $resultados, private LaboratorioAtual $laboratorio, private Transacao $transacao) {}
+    public function __construct(private ObterTrabalho $obter, private Trabalhos $trabalhos, private Referencias $referencias, private ResultadoRepository $resultados, private LaboratorioAtual $laboratorio, private Transacao $transacao, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(DigitarResultadosInput $input): void
     {
-        $this->transacao->executar(function () use ($input): void {
+        $pedidoId = $this->transacao->executar(function () use ($input): string {
             $item = ($this->obter)($input->itemId);
             $this->trabalhos->bloquear($item->pedidoId);
             $item = ($this->obter)($input->itemId);
@@ -48,6 +49,9 @@ final readonly class DigitarResultados
                 }
                 $this->resultados->save(Resultado::digitar($salvos[$a->id]->id ?? $this->resultados->nextIdentity(), $this->laboratorio->id(), $item->pedidoId, $item->id, $item->pacienteId, $a->id, $a->nome, $a->unidade, $v['valor'], $v['texto'], $input->por, $input->nome, new DateTimeImmutable('now', new DateTimeZone('UTC')), $a->faixa));
             }
+
+            return $item->pedidoId;
         });
+        ($this->trilha)('resultado_digitado', 'pedido', $pedidoId, 'Digitou os resultados do exame', $pedidoId);
     }
 }

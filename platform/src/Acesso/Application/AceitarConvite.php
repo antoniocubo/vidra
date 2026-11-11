@@ -11,11 +11,12 @@ use Vidra\Acesso\Domain\Equipe;
 use Vidra\Acesso\Domain\JaFazParteDaEquipe;
 use Vidra\Acesso\Domain\Relogio;
 use Vidra\Acesso\Domain\TransacaoDaEquipe;
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 
 final readonly class AceitarConvite
 {
-    public function __construct(private ConviteRepository $convites, private Equipe $equipe, private ContasDeUsuario $contas, private TransacaoDaEquipe $transacao, private Relogio $relogio) {}
+    public function __construct(private ConviteRepository $convites, private Equipe $equipe, private ContasDeUsuario $contas, private TransacaoDaEquipe $transacao, private Relogio $relogio, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(AceitarConviteInput $input): ConviteAceito
     {
@@ -23,7 +24,7 @@ final readonly class AceitarConvite
         $inicial = $this->convites->findByTokenHash($hash) ?? throw ConviteInvalido::para();
 
         // O aceite público descobre o laboratório pelo hash e revalida sob o mesmo bloqueio usado pela equipe.
-        return $this->transacao->executar($inicial->laboratorioId, function () use ($hash, $input): ConviteAceito {
+        $aceito = $this->transacao->executar($inicial->laboratorioId, function () use ($hash, $input): ConviteAceito {
             $convite = $this->convites->findByTokenHash($hash) ?? throw ConviteInvalido::para();
             $convite->conferirValidade($this->relogio->agora());
             if ($input->usuarioId !== null && strtolower(trim($input->emailAutenticado ?? '')) !== $convite->email) {
@@ -48,5 +49,8 @@ final readonly class AceitarConvite
 
             return new ConviteAceito($usuarioId, $convite->laboratorioId);
         });
+        $this->trilha->aceiteDeConvite($aceito->laboratorioId, $aceito->usuarioId, trim($input->nome) ?: $inicial->nome);
+
+        return $aceito;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Pedidos\Application\CancelarPedido;
 
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Pedidos\Domain\Amostra\AmostraRepository;
 use Vidra\Pedidos\Domain\Amostra\AmostrasDoPedido;
 use Vidra\Pedidos\Domain\Pedido\Cancelamento;
@@ -17,7 +18,7 @@ use Vidra\Shared\Domain\Transacao;
 final readonly class CancelarPedido
 {
     public function __construct(private PedidoRepository $pedidos, private AmostraRepository $amostras,
-        private LaboratorioAtual $laboratorio, private Transacao $transacao, private Relogio $relogio) {}
+        private LaboratorioAtual $laboratorio, private Transacao $transacao, private Relogio $relogio, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(CancelarPedidoInput $input): void
     {
@@ -39,5 +40,6 @@ final readonly class CancelarPedido
                 $this->amostras->save($amostra);
             }
         });
+        ($this->trilha)('pedido_cancelado', 'pedido', $input->pedido, 'Cancelou o pedido: '.$input->motivo, $input->pedido);
     }
 }

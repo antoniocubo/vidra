@@ -32,8 +32,8 @@ beforeEach(function (): void {
     $this->portas = new InMemoryPortasDeConvite;
     $this->lab = new LaboratorioAtualFixo('alfa');
     $this->equipe->dados['alfa'][1] = new MembroDaEquipe(1, 'Marina', 'marina@example.com', Papel::Admin, true);
-    $this->convidar = new ConvidarPessoa($this->repo, $this->equipe, $this->portas, $this->portas, $this->portas, $this->portas, $this->lab);
-    $this->aceitar = new AceitarConvite($this->repo, $this->equipe, $this->contas, $this->portas, $this->portas);
+    $this->convidar = new ConvidarPessoa($this->repo, $this->equipe, $this->portas, $this->portas, $this->portas, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar());
+    $this->aceitar = new AceitarConvite($this->repo, $this->equipe, $this->contas, $this->portas, $this->portas, Tests\Support\AuditoriaFixa::registrar());
     $this->id = ($this->convidar)(new ConvidarPessoaInput('Ana Souza', 'ana@example.com', 'rt', 1));
     $this->token = $this->portas->envios[0]['token'];
 });
@@ -112,23 +112,23 @@ it('não permite gerir convite de outro laboratório', function (): void {
 });
 
 it('preserva o último administrador ao remover ou rebaixar', function (): void {
-    expect(fn () => (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab))(2, 1))->toThrow(LaboratorioSemAdministrador::class);
-    expect(fn () => (new TrocarPapel($this->equipe, $this->portas, $this->lab))(2, 1, 'rt'))->toThrow(LaboratorioSemAdministrador::class);
+    expect(fn () => (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar()))(2, 1))->toThrow(LaboratorioSemAdministrador::class);
+    expect(fn () => (new TrocarPapel($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar()))(2, 1, 'rt'))->toThrow(LaboratorioSemAdministrador::class);
 });
 
 it('não permite alterar a própria participação', function (): void {
     $this->equipe->adicionar('alfa', 2, Papel::Admin);
-    expect(fn () => (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab))(1, 1))->toThrow(NaoPodeAlterarASiMesmo::class);
-    expect(fn () => (new TrocarPapel($this->equipe, $this->portas, $this->lab))(1, 1, 'rt'))->toThrow(NaoPodeAlterarASiMesmo::class);
+    expect(fn () => (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar()))(1, 1))->toThrow(NaoPodeAlterarASiMesmo::class);
+    expect(fn () => (new TrocarPapel($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar()))(1, 1, 'rt'))->toThrow(NaoPodeAlterarASiMesmo::class);
 });
 
 it('atualiza responsabilidade técnica de acordo com o papel e remove apenas o vínculo', function (): void {
     $this->equipe->adicionar('alfa', 2, Papel::Rt);
-    $trocar = new TrocarPapel($this->equipe, $this->portas, $this->lab);
+    $trocar = new TrocarPapel($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar());
     $trocar(1, 2, 'admin');
     expect($this->equipe->dados['alfa'][2]->eRt)->toBeTrue();
     $trocar(1, 2, 'bancada');
     expect($this->equipe->dados['alfa'][2]->eRt)->toBeFalse();
-    (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab))(1, 2);
+    (new RemoverDaEquipe($this->equipe, $this->portas, $this->lab, Tests\Support\AuditoriaFixa::registrar()))(1, 2);
     expect($this->equipe->listar('alfa'))->toHaveCount(1);
 });

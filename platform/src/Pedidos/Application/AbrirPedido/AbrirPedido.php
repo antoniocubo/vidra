@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Pedidos\Application\AbrirPedido;
 
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Pedidos\Domain\Amostra\AmostraRepository;
 use Vidra\Pedidos\Domain\Amostra\AmostrasDoPedido;
 use Vidra\Pedidos\Domain\Pedido\Exceptions\ReferenciaInvalida;
@@ -32,8 +33,7 @@ final readonly class AbrirPedido
         private CatalogoDeExames $catalogo,
         private LaboratorioAtual $laboratorio,
         private Transacao $transacao,
-        private Relogio $relogio,
-    ) {}
+        private Relogio $relogio, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(AbrirPedidoInput $input): PedidoAberto
     {
@@ -44,7 +44,7 @@ final readonly class AbrirPedido
         $this->pacientes->resumo($input->pacienteId) ?? throw ReferenciaInvalida::paciente();
         $this->solicitantes->resumo($input->solicitanteId) ?? throw ReferenciaInvalida::solicitante();
 
-        return $this->transacao->executar(function () use ($input, $laboratorioId, $pagador, $itens): PedidoAberto {
+        $aberto = $this->transacao->executar(function () use ($input, $laboratorioId, $pagador, $itens): PedidoAberto {
             $pedido = Pedido::abrir(
                 $this->pedidos->nextIdentity(),
                 $laboratorioId,
@@ -67,6 +67,9 @@ final readonly class AbrirPedido
 
             return new PedidoAberto($pedido->id->value, (string) $pedido->protocolo, count($amostras));
         });
+        ($this->trilha)('pedido_aberto', 'pedido', $aberto->pedidoId, "Abriu o pedido {$aberto->protocolo}", $aberto->pedidoId);
+
+        return $aberto;
     }
 
     private function pagador(AbrirPedidoInput $input): Pagador

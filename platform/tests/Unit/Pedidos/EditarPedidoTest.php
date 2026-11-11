@@ -33,12 +33,12 @@ beforeEach(function (): void {
     $this->laboratorio = new LaboratorioAtualFixo;
     $this->transacao = new TransacaoEmMemoria;
     $this->relogio = new RelogioDePedidosFixo;
-    $abrir = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(), Fixas::catalogo(), $this->laboratorio, $this->transacao, $this->relogio);
+    $abrir = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(), Fixas::catalogo(), $this->laboratorio, $this->transacao, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
     $aberto = $abrir(new AbrirPedidoInput(Fixas::THOR, Fixas::RAFAEL, 'clinica', Fixas::PATAS, 'rotina', [Fixas::BIOQUIMICO, Fixas::HEMOGRAMA], null, 7));
     $this->pedido = $this->pedidos->porId(new PedidoId($aberto->pedidoId));
-    $this->cancelarExame = new CancelarExame($this->pedidos, $this->amostras, $this->laboratorio, $this->transacao, $this->relogio);
-    $this->cancelarPedido = new CancelarPedido($this->pedidos, $this->amostras, $this->laboratorio, $this->transacao, $this->relogio);
-    $this->incluir = new IncluirExame($this->pedidos, $this->amostras, Fixas::catalogo(), Fixas::pagadores(), $this->laboratorio, $this->transacao);
+    $this->cancelarExame = new CancelarExame($this->pedidos, $this->amostras, $this->laboratorio, $this->transacao, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
+    $this->cancelarPedido = new CancelarPedido($this->pedidos, $this->amostras, $this->laboratorio, $this->transacao, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
+    $this->incluir = new IncluirExame($this->pedidos, $this->amostras, Fixas::catalogo(), Fixas::pagadores(), $this->laboratorio, $this->transacao, Tests\Support\AuditoriaFixa::registrar());
 });
 
 it('agrupa o exame incluído pelo material normalizado e aplica o desconto atual da clínica', function (): void {
@@ -113,9 +113,9 @@ it('recusa exame repetido ou desconhecido sem criar outra amostra', function ():
 
 it('não altera um pedido de outro laboratório mesmo com repositório em memória', function (): void {
     $outroLab = new LaboratorioAtualFixo('019a5d70-0000-7000-8000-000000000099');
-    $cancelar = new CancelarPedido($this->pedidos, $this->amostras, $outroLab, $this->transacao, $this->relogio);
-    $cancelarExame = new CancelarExame($this->pedidos, $this->amostras, $outroLab, $this->transacao, $this->relogio);
-    $incluir = new IncluirExame($this->pedidos, $this->amostras, Fixas::catalogo(), Fixas::pagadores(), $outroLab, $this->transacao);
+    $cancelar = new CancelarPedido($this->pedidos, $this->amostras, $outroLab, $this->transacao, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
+    $cancelarExame = new CancelarExame($this->pedidos, $this->amostras, $outroLab, $this->transacao, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
+    $incluir = new IncluirExame($this->pedidos, $this->amostras, Fixas::catalogo(), Fixas::pagadores(), $outroLab, $this->transacao, Tests\Support\AuditoriaFixa::registrar());
     expect(fn () => $cancelar(new CancelarPedidoInput($this->pedido->id->value, 'Motivo', 7)))->toThrow(PedidoNaoEncontrado::class);
     expect(fn () => $cancelarExame(new CancelarExameInput($this->pedido->id->value, $this->pedido->itens()[0]->id->value, 'Motivo', 7)))->toThrow(PedidoNaoEncontrado::class);
     expect(fn () => $incluir(new IncluirExameInput($this->pedido->id->value, Fixas::RENAL, 7)))->toThrow(PedidoNaoEncontrado::class);

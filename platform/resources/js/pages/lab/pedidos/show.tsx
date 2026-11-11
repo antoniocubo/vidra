@@ -9,6 +9,8 @@ import {
     PageHeader,
     StatusBadge,
     StatusStepper,
+    TabPanel,
+    Tabs,
     TextInput,
     Toast,
     useFlashToast,
@@ -51,6 +53,7 @@ type Pedido = {
 };
 type Props = {
     pedido: Pedido;
+    historico: { id: string; em: string; quem: string; detalhe: string }[];
     exames: Exame[];
     novaAmostra: boolean;
     imprimir: boolean;
@@ -79,7 +82,8 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
     rejeitada: { rotulo: 'Rejeitada', tom: 'crit' },
 };
 
-export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaAmostra }: Props) {
+export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaAmostra, historico }: Props) {
+    const [aba, setAba] = useState<'detalhes' | 'historico'>('detalhes');
     const flash = useFlashToast();
     const { laboratorio } = usePage<SharedData>().props;
     const [retificar, setRetificar] = useState(false);
@@ -155,251 +159,300 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
                         Se nada abriu, use o botão &quot;Imprimir etiquetas&quot; aqui em cima.
                     </Alert>
                 )}
-                <Card>
-                    <StatusStepper label="Andamento do pedido" steps={etapas} />
-                </Card>
-                <div className="grid items-start gap-6 lg:grid-cols-2">
-                    <Card title="Quem pede e quem paga">
-                        <DetailList
-                            items={[
-                                { term: pedido.paciente.rotuloDoResponsavel, value: pedido.paciente.responsavelNome },
-                                { term: 'Solicitante', value: `${pedido.solicitante.nome} · ${pedido.solicitante.registro}` },
-                                { term: 'Quem paga', value: pedido.pagador.rotulo },
-                                { term: 'Prioridade', value: pedido.prioridade === 'urgente' ? 'Urgente' : 'Rotina' },
-                                { term: 'Aberto em', value: pedido.criadoEm, mono: true },
-                                ...(pedido.observacao ? [{ term: 'Observação', value: pedido.observacao }] : []),
-                            ]}
-                        />
-                    </Card>
-                    <Card title="Amostras">
-                        <DataTable
-                            caption="Amostras do pedido"
-                            rows={pedido.amostras}
-                            getRowId={(a) => a.id}
-                            columns={[
-                                {
-                                    key: 'codigo',
-                                    header: 'Código',
-                                    mono: true,
-                                    cell: (a) => (
-                                        <Link
-                                            href={route('lab.amostras.index', { amostra: a.id })}
-                                            className="text-brand-500 font-semibold hover:underline"
-                                        >
-                                            {a.codigo}
-                                        </Link>
-                                    ),
-                                },
-                                { key: 'material', header: 'Material', cell: (a) => a.material },
-                                {
-                                    key: 'situacao',
-                                    header: 'Situação',
-                                    cell: (a) => (
-                                        <StatusBadge tone={SITUACAO_AMOSTRA[a.situacao]?.tom ?? 'neutral'}>
-                                            {SITUACAO_AMOSTRA[a.situacao]?.rotulo ?? a.situacao}
-                                        </StatusBadge>
-                                    ),
-                                },
-                                { key: 'hora', header: 'Chegou', mono: true, cell: (a) => a.recebidaEm ?? '—' },
-                            ]}
-                        />
-                    </Card>
-                </div>
-                {laudo && (
-                    <Card title={`Laudo ${laudo.numero}`}>
-                        {laudo.reabertoMotivo ? (
-                            <Alert tone="warn" title={`Laudo em retificação · ${laudo.reabertoMotivo}`}>
-                                <Link className="underline" href={route('lab.liberacao.index', { pedido: pedido.id })}>
-                                    Ir para a liberação
-                                </Link>
-                            </Alert>
-                        ) : (
-                            laboratorio?.eRt && (
-                                <Button variant="secondary" onClick={() => setRetificar(true)}>
-                                    Retificar laudo
-                                </Button>
-                            )
-                        )}
-                        <ConfirmDialog
-                            open={retificar}
-                            onOpenChange={setRetificar}
-                            title="Retificar laudo?"
-                            description="A versão atual continua valendo até você liberar a nova. Quem já recebeu o laudo recebe a nova versão."
-                            confirmLabel="Retificar laudo"
-                            loading={retificacao.processing}
-                            onConfirm={() =>
-                                retificacao.post(route('lab.pedidos.laudo.retificar', { pedido: pedido.id }), {
-                                    preserveScroll: true,
-                                    onSuccess: () => setRetificar(false),
-                                })
-                            }
-                        >
-                            <FormField id="motivo-retificacao" label="Motivo da retificação" error={retificacao.errors.motivo}>
-                                <TextInput
-                                    id="motivo-retificacao"
-                                    className="h-11"
-                                    required
-                                    maxLength={500}
-                                    value={retificacao.data.motivo}
-                                    onChange={(e) => retificacao.setData('motivo', e.target.value)}
+                <Tabs
+                    id="pedido"
+                    label="Informações do pedido"
+                    value={aba}
+                    onChange={setAba}
+                    tabs={[
+                        { value: 'detalhes', label: 'Detalhes' },
+                        { value: 'historico', label: 'Histórico' },
+                    ]}
+                />
+                {aba === 'historico' && (
+                    <TabPanel tabsId="pedido" value="historico">
+                        <Card title="Histórico do pedido">
+                            {historico.length === 0 ? (
+                                <p className="text-muted-foreground">Nenhum evento registrado.</p>
+                            ) : (
+                                <ol className="divide-border divide-y">
+                                    {historico.map((evento) => (
+                                        <li key={evento.id} className="space-y-1 py-4">
+                                            <p className="text-muted-foreground text-sm">
+                                                <time dateTime={evento.em}>
+                                                    {new Intl.DateTimeFormat('pt-BR', {
+                                                        dateStyle: 'short',
+                                                        timeStyle: 'short',
+                                                        timeZone: 'America/Sao_Paulo',
+                                                    })
+                                                        .format(new Date(evento.em))
+                                                        .replace(', ', ' ')}
+                                                </time>{' '}
+                                                · {evento.quem}
+                                            </p>
+                                            <p>{evento.detalhe}</p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
+                        </Card>
+                    </TabPanel>
+                )}
+                {aba === 'detalhes' && (
+                    <TabPanel tabsId="pedido" value="detalhes" className="space-y-6">
+                        <Card>
+                            <StatusStepper label="Andamento do pedido" steps={etapas} />
+                        </Card>
+                        <div className="grid items-start gap-6 lg:grid-cols-2">
+                            <Card title="Quem pede e quem paga">
+                                <DetailList
+                                    items={[
+                                        { term: pedido.paciente.rotuloDoResponsavel, value: pedido.paciente.responsavelNome },
+                                        { term: 'Solicitante', value: `${pedido.solicitante.nome} · ${pedido.solicitante.registro}` },
+                                        { term: 'Quem paga', value: pedido.pagador.rotulo },
+                                        { term: 'Prioridade', value: pedido.prioridade === 'urgente' ? 'Urgente' : 'Rotina' },
+                                        { term: 'Aberto em', value: pedido.criadoEm, mono: true },
+                                        ...(pedido.observacao ? [{ term: 'Observação', value: pedido.observacao }] : []),
+                                    ]}
                                 />
-                            </FormField>
-                            {Object.entries(retificacao.errors)
-                                .filter(([k]) => k !== 'motivo')
-                                .map(([k, v]) => (
-                                    <p key={k} role="alert" className="text-crit-600">
-                                        {v}
-                                    </p>
-                                ))}
-                        </ConfirmDialog>
-                        <div className="my-4 space-y-2">
-                            <h3 className="font-semibold">Histórico de versões</h3>
-                            {laudo.versoes.map((v) => (
-                                <p key={v.versao} className="text-sm">
-                                    Versão {v.versao} · {v.em} · {v.por}
-                                    {v.motivo && ` · ${v.motivo}`}{' '}
-                                    {v.pdf && (
-                                        <a className="text-primary underline" href={v.pdf}>
-                                            Baixar PDF da versão {v.versao}
-                                        </a>
-                                    )}
-                                </p>
-                            ))}
+                            </Card>
+                            <Card title="Amostras">
+                                <DataTable
+                                    caption="Amostras do pedido"
+                                    rows={pedido.amostras}
+                                    getRowId={(a) => a.id}
+                                    columns={[
+                                        {
+                                            key: 'codigo',
+                                            header: 'Código',
+                                            mono: true,
+                                            cell: (a) => (
+                                                <Link
+                                                    href={route('lab.amostras.index', { amostra: a.id })}
+                                                    className="text-brand-500 font-semibold hover:underline"
+                                                >
+                                                    {a.codigo}
+                                                </Link>
+                                            ),
+                                        },
+                                        { key: 'material', header: 'Material', cell: (a) => a.material },
+                                        {
+                                            key: 'situacao',
+                                            header: 'Situação',
+                                            cell: (a) => (
+                                                <StatusBadge tone={SITUACAO_AMOSTRA[a.situacao]?.tom ?? 'neutral'}>
+                                                    {SITUACAO_AMOSTRA[a.situacao]?.rotulo ?? a.situacao}
+                                                </StatusBadge>
+                                            ),
+                                        },
+                                        { key: 'hora', header: 'Chegou', mono: true, cell: (a) => a.recebidaEm ?? '—' },
+                                    ]}
+                                />
+                            </Card>
                         </div>
-                        <DetailList
-                            items={[
-                                { term: 'Liberado por', value: `${laudo.usuario} · RT ${laudo.rt} · ${laudo.registro}` },
-                                { term: 'Liberado em', value: laudo.quando, mono: true },
-                                { term: 'Código de acesso', value: laudo.codigo, mono: true },
-                            ]}
-                        />
-                        {entrega && (
-                            <div className="mt-5 space-y-4">
-                                {entrega.pdfErro ? (
-                                    <Alert tone="warn" title="Não foi possível gerar o PDF">
-                                        A entrega será tentada novamente. Se o problema continuar, consulte o suporte.
+                        {laudo && (
+                            <Card title={`Laudo ${laudo.numero}`}>
+                                {laudo.reabertoMotivo ? (
+                                    <Alert tone="warn" title={`Laudo em retificação · ${laudo.reabertoMotivo}`}>
+                                        <Link className="underline" href={route('lab.liberacao.index', { pedido: pedido.id })}>
+                                            Ir para a liberação
+                                        </Link>
                                     </Alert>
                                 ) : (
-                                    !entrega.pdfPronto && (
-                                        <p role="status" className="text-muted-foreground text-sm">
-                                            Gerando o PDF… Recarregue para consultar o andamento.
-                                        </p>
+                                    laboratorio?.eRt && (
+                                        <Button variant="secondary" onClick={() => setRetificar(true)}>
+                                            Retificar laudo
+                                        </Button>
                                     )
                                 )}
-                                <div className="flex flex-wrap gap-3">
-                                    {entrega.pdfPronto && (
-                                        <Button asChild>
-                                            <a href={route('lab.pedidos.laudo.pdf', { pedido: pedido.id })}>Baixar o laudo em PDF</a>
-                                        </Button>
-                                    )}
-                                    {entrega.whatsapp && (
-                                        <Button variant="secondary" asChild>
-                                            <a href={entrega.whatsapp} target="_blank" rel="noopener noreferrer">
-                                                Compartilhar no WhatsApp
-                                            </a>
-                                        </Button>
-                                    )}
-                                    {/* Sem PDF pronto, o mesmo botão refaz a entrega completa: o laudo nunca fica preso. */}
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() =>
-                                            router.post(route('lab.pedidos.laudo.reenviar', { pedido: pedido.id }), {}, { preserveScroll: true })
-                                        }
-                                    >
-                                        {entrega.pdfPronto ? 'Reenviar e-mail' : 'Gerar PDF e enviar de novo'}
-                                    </Button>
-                                    {!entrega.pdfPronto && (
-                                        <Button variant="ghost" onClick={() => router.reload({ only: ['entrega'] })}>
-                                            Atualizar andamento
-                                        </Button>
-                                    )}
-                                </div>
-                                <a href={entrega.link} className="text-brand-500 text-sm underline" target="_blank" rel="noopener noreferrer">
-                                    Ver link de acesso
-                                </a>
-                                {entrega.entregas.length > 0 && (
-                                    <ul className="text-muted-foreground space-y-2 text-sm">
-                                        {entrega.entregas.map((texto, i) => (
-                                            <li key={i} className="break-words">
-                                                {texto}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                        )}
-                    </Card>
-                )}
-                <Card title="Exames">
-                    {pedido.podeIncluirExame && (
-                        <div className="mb-4">
-                            <BuscaDeExame
-                                exames={exames}
-                                desconto={pedido.pagador.tipo === 'clinica' ? pedido.pagador.descontoPercentual : 0}
-                                escolhidos={pedido.itens.filter((i) => i.situacao !== 'cancelado').map((i) => i.exameId)}
-                                disabled={inclusao.processing}
-                                error={errosInclusao.exame_id ?? errosInclusao.exame_ids ?? errosInclusao.form}
-                                onEscolher={(exame) => {
-                                    inclusao.transform(() => ({ exame_id: exame.id }));
-                                    inclusao.post(route('lab.pedidos.itens.store', { pedido: pedido.id }), { preserveScroll: true });
-                                }}
-                            />
-                        </div>
-                    )}
-                    <DataTable
-                        caption="Exames do pedido"
-                        rows={pedido.itens}
-                        getRowId={(i) => i.id}
-                        columns={[
-                            { key: 'codigo', header: 'Código', mono: true, cell: (i) => i.codigo },
-                            {
-                                key: 'nome',
-                                header: 'Exame',
-                                cell: (i) => (
-                                    <div>
-                                        <span className={i.situacao === 'cancelado' ? 'text-muted-foreground line-through' : ''}>{i.nome}</span>
-                                        {i.cancelamento && (
-                                            <p className="text-muted-foreground mt-1 text-xs">
-                                                Motivo: {i.cancelamento.motivo} · por {i.cancelamento.por} em {i.cancelamento.em}
+                                <ConfirmDialog
+                                    open={retificar}
+                                    onOpenChange={setRetificar}
+                                    title="Retificar laudo?"
+                                    description="A versão atual continua valendo até você liberar a nova. Quem já recebeu o laudo recebe a nova versão."
+                                    confirmLabel="Retificar laudo"
+                                    loading={retificacao.processing}
+                                    onConfirm={() =>
+                                        retificacao.post(route('lab.pedidos.laudo.retificar', { pedido: pedido.id }), {
+                                            preserveScroll: true,
+                                            onSuccess: () => setRetificar(false),
+                                        })
+                                    }
+                                >
+                                    <FormField id="motivo-retificacao" label="Motivo da retificação" error={retificacao.errors.motivo}>
+                                        <TextInput
+                                            id="motivo-retificacao"
+                                            className="h-11"
+                                            required
+                                            maxLength={500}
+                                            value={retificacao.data.motivo}
+                                            onChange={(e) => retificacao.setData('motivo', e.target.value)}
+                                        />
+                                    </FormField>
+                                    {Object.entries(retificacao.errors)
+                                        .filter(([k]) => k !== 'motivo')
+                                        .map(([k, v]) => (
+                                            <p key={k} role="alert" className="text-crit-600">
+                                                {v}
                                             </p>
+                                        ))}
+                                </ConfirmDialog>
+                                <div className="my-4 space-y-2">
+                                    <h3 className="font-semibold">Histórico de versões</h3>
+                                    {laudo.versoes.map((v) => (
+                                        <p key={v.versao} className="text-sm">
+                                            Versão {v.versao} · {v.em} · {v.por}
+                                            {v.motivo && ` · ${v.motivo}`}{' '}
+                                            {v.pdf && (
+                                                <a className="text-primary underline" href={v.pdf}>
+                                                    Baixar PDF da versão {v.versao}
+                                                </a>
+                                            )}
+                                        </p>
+                                    ))}
+                                </div>
+                                <DetailList
+                                    items={[
+                                        { term: 'Liberado por', value: `${laudo.usuario} · RT ${laudo.rt} · ${laudo.registro}` },
+                                        { term: 'Liberado em', value: laudo.quando, mono: true },
+                                        { term: 'Código de acesso', value: laudo.codigo, mono: true },
+                                    ]}
+                                />
+                                {entrega && (
+                                    <div className="mt-5 space-y-4">
+                                        {entrega.pdfErro ? (
+                                            <Alert tone="warn" title="Não foi possível gerar o PDF">
+                                                A entrega será tentada novamente. Se o problema continuar, consulte o suporte.
+                                            </Alert>
+                                        ) : (
+                                            !entrega.pdfPronto && (
+                                                <p role="status" className="text-muted-foreground text-sm">
+                                                    Gerando o PDF… Recarregue para consultar o andamento.
+                                                </p>
+                                            )
+                                        )}
+                                        <div className="flex flex-wrap gap-3">
+                                            {entrega.pdfPronto && (
+                                                <Button asChild>
+                                                    <a href={route('lab.pedidos.laudo.pdf', { pedido: pedido.id })}>Baixar o laudo em PDF</a>
+                                                </Button>
+                                            )}
+                                            {entrega.whatsapp && (
+                                                <Button variant="secondary" asChild>
+                                                    <a href={entrega.whatsapp} target="_blank" rel="noopener noreferrer">
+                                                        Compartilhar no WhatsApp
+                                                    </a>
+                                                </Button>
+                                            )}
+                                            {/* Sem PDF pronto, o mesmo botão refaz a entrega completa: o laudo nunca fica preso. */}
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() =>
+                                                    router.post(
+                                                        route('lab.pedidos.laudo.reenviar', { pedido: pedido.id }),
+                                                        {},
+                                                        { preserveScroll: true },
+                                                    )
+                                                }
+                                            >
+                                                {entrega.pdfPronto ? 'Reenviar e-mail' : 'Gerar PDF e enviar de novo'}
+                                            </Button>
+                                            {!entrega.pdfPronto && (
+                                                <Button variant="ghost" onClick={() => router.reload({ only: ['entrega'] })}>
+                                                    Atualizar andamento
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <a href={entrega.link} className="text-brand-500 text-sm underline" target="_blank" rel="noopener noreferrer">
+                                            Ver link de acesso
+                                        </a>
+                                        {entrega.entregas.length > 0 && (
+                                            <ul className="text-muted-foreground space-y-2 text-sm">
+                                                {entrega.entregas.map((texto, i) => (
+                                                    <li key={i} className="break-words">
+                                                        {texto}
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         )}
                                     </div>
-                                ),
-                            },
-                            { key: 'material', header: 'Material', cell: (i) => i.material },
-                            {
-                                key: 'situacao',
-                                header: 'Situação',
-                                cell: (i) => (
-                                    <StatusBadge tone={i.situacao === 'cancelado' ? 'neutral' : (tomDaSituacao[i.situacao] ?? 'neutral')}>
-                                        {i.situacaoRotulo}
-                                    </StatusBadge>
-                                ),
-                            },
-                            {
-                                key: 'acoes',
-                                header: 'Ações',
-                                cell: (i) =>
-                                    pedido.podeCancelar && i.situacao !== 'cancelado' && i.situacao !== 'liberado' ? (
-                                        <Button variant="ghost" onClick={() => abrirCancelamento({ item: i.id, nome: i.nome })}>
-                                            Cancelar exame
-                                        </Button>
-                                    ) : null,
-                            },
-                            { key: 'preco', header: 'Preço', align: 'right', mono: true, cell: (i) => reais(i.precoCentavos) },
-                        ]}
-                        footer={
-                            <div className="border-border flex items-center justify-between border-t px-4 py-3 text-sm font-semibold">
-                                <span>
-                                    {pedido.pagador.tipo === 'clinica'
-                                        ? `Total na tabela da clínica · desconto de ${pedido.pagador.descontoPercentual}%`
-                                        : 'Total'}
-                                </span>
-                                <span className="font-mono tabular-nums">{reais(pedido.totalCentavos)}</span>
-                            </div>
-                        }
-                    />
-                </Card>
+                                )}
+                            </Card>
+                        )}
+                        <Card title="Exames">
+                            {pedido.podeIncluirExame && (
+                                <div className="mb-4">
+                                    <BuscaDeExame
+                                        exames={exames}
+                                        desconto={pedido.pagador.tipo === 'clinica' ? pedido.pagador.descontoPercentual : 0}
+                                        escolhidos={pedido.itens.filter((i) => i.situacao !== 'cancelado').map((i) => i.exameId)}
+                                        disabled={inclusao.processing}
+                                        error={errosInclusao.exame_id ?? errosInclusao.exame_ids ?? errosInclusao.form}
+                                        onEscolher={(exame) => {
+                                            inclusao.transform(() => ({ exame_id: exame.id }));
+                                            inclusao.post(route('lab.pedidos.itens.store', { pedido: pedido.id }), { preserveScroll: true });
+                                        }}
+                                    />
+                                </div>
+                            )}
+                            <DataTable
+                                caption="Exames do pedido"
+                                rows={pedido.itens}
+                                getRowId={(i) => i.id}
+                                columns={[
+                                    { key: 'codigo', header: 'Código', mono: true, cell: (i) => i.codigo },
+                                    {
+                                        key: 'nome',
+                                        header: 'Exame',
+                                        cell: (i) => (
+                                            <div>
+                                                <span className={i.situacao === 'cancelado' ? 'text-muted-foreground line-through' : ''}>
+                                                    {i.nome}
+                                                </span>
+                                                {i.cancelamento && (
+                                                    <p className="text-muted-foreground mt-1 text-xs">
+                                                        Motivo: {i.cancelamento.motivo} · por {i.cancelamento.por} em {i.cancelamento.em}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ),
+                                    },
+                                    { key: 'material', header: 'Material', cell: (i) => i.material },
+                                    {
+                                        key: 'situacao',
+                                        header: 'Situação',
+                                        cell: (i) => (
+                                            <StatusBadge tone={i.situacao === 'cancelado' ? 'neutral' : (tomDaSituacao[i.situacao] ?? 'neutral')}>
+                                                {i.situacaoRotulo}
+                                            </StatusBadge>
+                                        ),
+                                    },
+                                    {
+                                        key: 'acoes',
+                                        header: 'Ações',
+                                        cell: (i) =>
+                                            pedido.podeCancelar && i.situacao !== 'cancelado' && i.situacao !== 'liberado' ? (
+                                                <Button variant="ghost" onClick={() => abrirCancelamento({ item: i.id, nome: i.nome })}>
+                                                    Cancelar exame
+                                                </Button>
+                                            ) : null,
+                                    },
+                                    { key: 'preco', header: 'Preço', align: 'right', mono: true, cell: (i) => reais(i.precoCentavos) },
+                                ]}
+                                footer={
+                                    <div className="border-border flex items-center justify-between border-t px-4 py-3 text-sm font-semibold">
+                                        <span>
+                                            {pedido.pagador.tipo === 'clinica'
+                                                ? `Total na tabela da clínica · desconto de ${pedido.pagador.descontoPercentual}%`
+                                                : 'Total'}
+                                        </span>
+                                        <span className="font-mono tabular-nums">{reais(pedido.totalCentavos)}</span>
+                                    </div>
+                                }
+                            />
+                        </Card>
+                    </TabPanel>
+                )}
             </div>
             <ConfirmDialog
                 open={cancelar !== null}

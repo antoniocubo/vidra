@@ -13,17 +13,18 @@ use Vidra\Acesso\Domain\Papel;
 use Vidra\Acesso\Domain\Relogio;
 use Vidra\Acesso\Domain\TokensDeConvite;
 use Vidra\Acesso\Domain\TransacaoDaEquipe;
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Shared\Domain\Tenancy\LaboratorioAtual;
 
 final readonly class ConvidarPessoa
 {
-    public function __construct(private ConviteRepository $convites, private Equipe $equipe, private EntregaDeConvites $entrega, private TokensDeConvite $tokens, private TransacaoDaEquipe $transacao, private Relogio $relogio, private LaboratorioAtual $laboratorio) {}
+    public function __construct(private ConviteRepository $convites, private Equipe $equipe, private EntregaDeConvites $entrega, private TokensDeConvite $tokens, private TransacaoDaEquipe $transacao, private Relogio $relogio, private LaboratorioAtual $laboratorio, private RegistrarNaTrilha $trilha) {}
 
     public function __invoke(ConvidarPessoaInput $input): string
     {
         $lab = $this->laboratorio->id();
 
-        return $this->transacao->executar($lab, function () use ($input, $lab): string {
+        $id = $this->transacao->executar($lab, function () use ($input, $lab): string {
             $email = (new \Vidra\Shared\Domain\ValueObjects\Email($input->email))->value;
             if ($this->equipe->contemEmail($lab, $email)) {
                 throw JaFazParteDaEquipe::para();
@@ -41,5 +42,8 @@ final readonly class ConvidarPessoa
 
             return $convite->id;
         });
+        ($this->trilha)('pessoa_convidada', 'equipe', $id, "Convidou {$input->nome} ({$input->email})");
+
+        return $id;
     }
 }

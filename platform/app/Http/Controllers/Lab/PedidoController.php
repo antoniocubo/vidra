@@ -83,7 +83,7 @@ final class PedidoController extends Controller
             ->with('success', "Pedido {$aberto->protocolo} salvo.");
     }
 
-    public function show(Request $request, string $pedido, DetalharPedido $detalhar, BuscarExames $exames, \Vidra\Laudos\Application\LaudoDoPedido $laudo, \Vidra\Laudos\Application\ConsultarEntrega $entrega): Response
+    public function show(Request $request, string $pedido, DetalharPedido $detalhar, BuscarExames $exames, \Vidra\Laudos\Application\LaudoDoPedido $laudo, \Vidra\Laudos\Application\ConsultarEntrega $entrega, \Vidra\Auditoria\Application\HistoricoDoPedido $historico): Response
     {
         $request->validate(['busca_exame' => ['nullable', 'string', 'max:100']]);
         $liberado = $laudo($pedido);
@@ -94,6 +94,7 @@ final class PedidoController extends Controller
             'exames' => fn (): array => $exames($request->string('busca_exame')->value()),
             'novaAmostra' => $request->boolean('nova_amostra'),
             'entrega' => $entrega($pedido),
+            'historico' => $historico($pedido),
             'laudo' => $liberado === null ? null : [
                 'numero' => $liberado->numero, 'rt' => $liberado->rtNome,
                 'registro' => $liberado->rtRegistro, 'usuario' => $liberado->usuarioNome,

@@ -29,7 +29,7 @@ beforeEach(function (): void {
     $this->pedidos = new InMemoryPedidoRepository;
     $this->amostras = new InMemoryAmostraRepository;
     $this->relogio = new RelogioDePedidosFixo;
-    $this->abrir = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(), Fixas::catalogo(), new LaboratorioAtualFixo, new TransacaoEmMemoria, $this->relogio);
+    $this->abrir = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(), Fixas::catalogo(), new LaboratorioAtualFixo, new TransacaoEmMemoria, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
     $this->receber = new ReceberAmostra($this->amostras, $this->pedidos, Fixas::pacientes(), new TransacaoEmMemoria, $this->relogio);
     $this->rejeitar = new RejeitarAmostra($this->amostras, $this->pedidos, new TransacaoEmMemoria);
     $this->recoleta = new PedirRecoleta($this->amostras, $this->pedidos, new TransacaoEmMemoria);
@@ -57,7 +57,7 @@ it('cobra preço de tabela quando o veterinário ou o tutor pagam', function ():
 });
 
 it('recusa clínica inativa, exame fora do catálogo e paciente desconhecido', function (): void {
-    $inativa = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(10, false), Fixas::catalogo(), new LaboratorioAtualFixo, new TransacaoEmMemoria, $this->relogio);
+    $inativa = new AbrirPedido($this->pedidos, $this->amostras, Fixas::pacientes(), Fixas::solicitantes(), Fixas::pagadores(10, false), Fixas::catalogo(), new LaboratorioAtualFixo, new TransacaoEmMemoria, $this->relogio, Tests\Support\AuditoriaFixa::registrar());
     expect(fn () => $inativa(new AbrirPedidoInput(Fixas::THOR, Fixas::RAFAEL, 'clinica', Fixas::PATAS, 'rotina', [Fixas::BIOQUIMICO], null, 7)))->toThrow(ReferenciaInvalida::class);
     expect(fn () => ($this->abrirCom)(['019a5d70-0000-7000-8000-0000000000ff']))->toThrow(ReferenciaInvalida::class);
     expect(fn () => ($this->abrir)(new AbrirPedidoInput('019a5d70-0000-7000-8000-0000000000ee', Fixas::RAFAEL, 'responsavel', null, 'rotina', [Fixas::BIOQUIMICO], null, 7)))->toThrow(ReferenciaInvalida::class);

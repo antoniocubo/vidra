@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Pedidos\Application\IncluirExame;
 
+use Vidra\Auditoria\Application\RegistrarNaTrilha;
 use Vidra\Pedidos\Domain\Amostra\AmostraRepository;
 use Vidra\Pedidos\Domain\Amostra\AmostrasDoPedido;
 use Vidra\Pedidos\Domain\Pedido\Exceptions\PedidoNaoEncontrado;
@@ -20,14 +21,14 @@ final readonly class IncluirExame
 {
     public function __construct(private PedidoRepository $pedidos, private AmostraRepository $amostras,
         private CatalogoDeExames $catalogo, private Pagadores $pagadores,
-        private LaboratorioAtual $laboratorio, private Transacao $transacao) {}
+        private LaboratorioAtual $laboratorio, private Transacao $transacao, private RegistrarNaTrilha $trilha) {}
 
     /** Devolve se uma amostra nova precisa de etiqueta. */
     public function __invoke(IncluirExameInput $input): bool
     {
         $laboratorioId = $this->laboratorio->id();
 
-        return $this->transacao->executar(function () use ($input, $laboratorioId): bool {
+        $resultado = $this->transacao->executar(function () use ($input, $laboratorioId): array {
             $pedido = $this->pedidos->porId(new PedidoId($input->pedido)) ?? throw PedidoNaoEncontrado::para();
             if ($this->pedidos->temLaudo($pedido->id)) {
                 throw \Vidra\Pedidos\Domain\Pedido\Exceptions\PedidoInvalido::jaLiberado();
@@ -45,7 +46,10 @@ final readonly class IncluirExame
             $this->pedidos->save($pedido);
             $this->amostras->save($amostra);
 
-            return $nova;
+            return [$nova, $exame->nome];
         });
+        ($this->trilha)('exame_incluido', 'pedido', $input->pedido, 'Incluiu '.$resultado[1], $input->pedido);
+
+        return $resultado[0];
     }
 }

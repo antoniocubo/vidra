@@ -27,7 +27,7 @@ it('digita atualiza envia e reabre usando portas em memória sem banco', functio
     $repo = new InMemoryResultadoBancadaRepository;
     $obter = new ObterTrabalho($portas);
     $tx = new TransacaoEmMemoria;
-    $digitar = new DigitarResultados($obter, $portas, $portas, $repo, new LaboratorioAtualFixo('lab'), $tx);
+    $digitar = new DigitarResultados($obter, $portas, $portas, $repo, new LaboratorioAtualFixo('lab'), $tx, Tests\Support\AuditoriaFixa::registrar());
     $digitar(new DigitarResultadosInput('item', ['analito' => ['valor' => '6,00', 'texto' => null]], 1, 'Bruno'));
     expect($repo->doItem('item')[0]->classificacao)->toBe(Classificacao::Alto)->and($portas->todos()[0]->situacao)->toBe('em_analise');
     $digitar(new DigitarResultadosInput('item', ['analito' => ['valor' => '4', 'texto' => null]], 2, 'Marina'));
