@@ -18,9 +18,11 @@ type Props = {
         clinicas: { id: string }[];
     };
     clinicas: ClinicaOpcao[];
+    emailDeAcesso: string | null;
 };
 
-export default function EditarVeterinario({ veterinario, clinicas }: Props) {
+export default function EditarVeterinario({ veterinario, clinicas, emailDeAcesso }: Props) {
+    const acesso = useForm({ acesso: '' });
     const { data, setData, put, errors, processing } = useForm({
         telefone_critico: veterinario.telefoneCritico,
         quem_paga: veterinario.quemPaga,
@@ -69,6 +71,30 @@ export default function EditarVeterinario({ veterinario, clinicas }: Props) {
                     />
                 </FormSection>
 
+                <FormSection title="Acesso do veterinário">
+                    <div className="space-y-3 sm:col-span-2">
+                        {emailDeAcesso ? (
+                            <p>Já acessa o Vidra com {emailDeAcesso}</p>
+                        ) : (
+                            <>
+                                <p className="text-muted-foreground">
+                                    Libere os pedidos e laudos deste laboratório para {veterinario.email}. O convite vale por 7 dias.
+                                </p>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    loading={acesso.processing}
+                                    onClick={() =>
+                                        acesso.post(route('lab.veterinarios.acesso', { vinculo: veterinario.vinculoId }), { preserveScroll: true })
+                                    }
+                                >
+                                    Enviar acesso por e-mail
+                                </Button>
+                            </>
+                        )}
+                        {acesso.errors.acesso && <Alert tone="crit" title={acesso.errors.acesso} />}
+                    </div>
+                </FormSection>
                 <OndeAtendeSection
                     clinicas={clinicas}
                     value={data.clinica_ids}

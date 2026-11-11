@@ -10,25 +10,13 @@ use App\Models\ContaVeterinario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 use Vidra\Veterinaria\Application\LaboratoriosDoVeterinario\LaboratoriosDoVeterinario;
 use Vidra\Veterinaria\Domain\Acesso\LaboratorioDoVeterinario;
 
-/** Escolha e troca do laboratório no acesso vet (board 7a). */
+/** Troca do laboratório no acesso vet; a tela de escolha (board 7a) é do Vet\PedidoController. */
 final class LaboratorioController extends Controller
 {
     public function __construct(private readonly LaboratoriosDoVeterinario $laboratorios) {}
-
-    public function create(Request $request): Response
-    {
-        return Inertia::render('vet/escolher-laboratorio', [
-            'laboratorios' => array_map(
-                static fn (LaboratorioDoVeterinario $l): array => ['id' => $l->laboratorioId, 'nome' => $l->nome],
-                $this->doVeterinario($request),
-            ),
-        ]);
-    }
 
     public function store(Request $request): RedirectResponse
     {

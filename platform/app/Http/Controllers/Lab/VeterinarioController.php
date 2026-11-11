@@ -70,12 +70,13 @@ final class VeterinarioController extends Controller
             : 'Veterinário cadastrado.');
     }
 
-    public function edit(string $vinculo, DetalharVinculo $detalhar, ListarClinicas $clinicas): Response
+    public function edit(string $vinculo, DetalharVinculo $detalhar, \Vidra\Veterinaria\Application\AcessoDoVeterinario\ConsultarAcessoDoVeterinario $acesso, ListarClinicas $clinicas): Response
     {
         $veterinario = $this->executar(fn () => $detalhar($vinculo));
 
         return Inertia::render('lab/veterinarios/edit', [
             'veterinario' => $veterinario,
+            'emailDeAcesso' => $acesso($vinculo),
             'clinicas' => $this->opcoesDeClinica($clinicas(), $veterinario->clinicas),
         ]);
     }

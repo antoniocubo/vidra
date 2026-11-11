@@ -31,3 +31,5 @@ Route::post('tutores/{tutor}/autorizacao', [App\Http\Controllers\Lab\TutorContro
 Route::delete('tutores/{tutor}/autorizacao', [App\Http\Controllers\Lab\TutorController::class, 'retirar'])->whereUuid('tutor')->name('tutores.autorizacao.destroy');
 Route::get('tutores/{tutor}/animais/novo', [App\Http\Controllers\Lab\AnimalController::class, 'create'])->whereUuid('tutor')->name('tutores.animais.create');
 Route::post('tutores/{tutor}/animais/novo', [App\Http\Controllers\Lab\AnimalController::class, 'store'])->whereUuid('tutor')->name('tutores.animais.store');
+
+Route::post('veterinarios/{vinculo}/acesso', [App\Http\Controllers\Vet\ConviteController::class, 'enviar'])->whereUuid('vinculo')->middleware('throttle:5,1')->name('veterinarios.acesso');

@@ -34,5 +34,21 @@ final class VeterinariaServiceProvider extends ServiceProvider
         \Vidra\Financeiro\Domain\DadosDosPagadores::class => Financeiro\DadosDosPagadoresVeterinaria::class,
         Transacao::class => TransacaoEloquent::class,
         \Vidra\Veterinaria\Domain\Acesso\AcessosDoVeterinario::class => Acesso\EloquentAcessosDoVeterinario::class,
+        \Vidra\Veterinaria\Domain\Acesso\PedidosVisiveis::class => Acesso\EloquentPedidosVisiveis::class,
+        \Vidra\Veterinaria\Domain\Acesso\DownloadVeterinario::class => Acesso\DownloadVeterinarioEloquent::class,
+        \Vidra\Veterinaria\Domain\Acesso\ConvitesDoVeterinario::class => Acesso\EloquentConvitesDoVeterinario::class,
+        \Vidra\Veterinaria\Domain\Acesso\EntregaDeAcessoVeterinario::class => Mail\EntregaDeAcessoPorEmail::class,
+        \Vidra\Veterinaria\Domain\Acesso\DadosDoAcesso::class => Acesso\DadosDoAcessoEloquent::class,
     ];
+
+    public function boot(): void
+    {
+        \Illuminate\Auth\Notifications\ResetPassword::createUrlUsing(function (\Illuminate\Contracts\Auth\CanResetPassword $conta, string $token): string {
+            if ($conta instanceof \App\Models\ContaVeterinario) {
+                return route('vet.senha.nova', ['token' => $token, 'email' => $conta->getEmailForPasswordReset()]);
+            }
+
+            return route('password.reset', ['token' => $token, 'email' => $conta->getEmailForPasswordReset()]);
+        });
+    }
 }

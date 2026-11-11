@@ -28,6 +28,9 @@ final readonly class LaudoDto
 
     public string $codigoAcesso;
 
+    /** Valores críticos avisados: todo crítico é avisado antes de liberar. */
+    public int $criticos;
+
     /** @param list<\Vidra\Laudos\Domain\VersaoDoLaudo> $versoes */
     public function __construct(Laudo $laudo, array $versoes)
     {
@@ -40,5 +43,6 @@ final readonly class LaudoDto
         $this->usuarioNome = $laudo->usuarioNome;
         $this->liberadoEm = $laudo->liberadoEm;
         $this->codigoAcesso = $laudo->codigoAcesso->value;
+        $this->criticos = count($laudo->avisos);
     }
 }
