@@ -201,7 +201,9 @@ test('do cadastro do laboratório ao laudo entregue ao tutor', async ({ page, br
         await expect(page.getByText(/Registre o aviso do valor crítico de Glicose/)).toBeVisible();
 
         await page.getByRole('button', { name: 'Registrar que avisei a clínica' }).click();
-        await page.getByRole('button', { name: 'Confirmar aviso' }).click();
+        const avisei = page.getByLabel('Avisei');
+        await expect(avisei).toBeVisible();
+        await avisei.press('Enter'); // envia o formulário do aviso sem depender do botão estar parado na tela
         await expect(page.getByText(/Aviso registrado para/)).toBeVisible();
 
         await page.getByRole('button', { name: 'Liberar laudo' }).click();

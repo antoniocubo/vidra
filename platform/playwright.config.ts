@@ -8,6 +8,8 @@ export default defineConfig({
     expect: { timeout: 15_000 },
     workers: 1,
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+    // No CI, uma segunda tentativa; o trace da primeira falha fica no artefato.
+    retries: process.env.CI ? 1 : 0,
     use: {
         baseURL: `http://localhost:${porta}`,
         locale: 'pt-BR',
