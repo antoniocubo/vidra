@@ -8,6 +8,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Vidra\Acesso\Domain\LaboratorioDoUsuario;
+use Vidra\Acesso\Domain\Papel;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -57,11 +58,11 @@ class HandleInertiaRequests extends Middleware
         ]);
     }
 
-    /** @return array{id: string, nome: string, papel: string, eRt: bool}|null */
+    /** @return array{id: string, nome: string, papel: string, eRt: bool, areas: list<string>}|null */
     private function laboratorio(mixed $laboratorio): ?array
     {
         return $laboratorio instanceof LaboratorioDoUsuario
-            ? ['id' => $laboratorio->id->value, 'nome' => $laboratorio->nome, 'papel' => $laboratorio->papel, 'eRt' => $laboratorio->eRt]
+            ? ['id' => $laboratorio->id->value, 'nome' => $laboratorio->nome, 'papel' => $laboratorio->papel, 'eRt' => $laboratorio->eRt, 'areas' => Papel::tryFrom($laboratorio->papel)?->areas() ?? []]
             : null;
     }
 }

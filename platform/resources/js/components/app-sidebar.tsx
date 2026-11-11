@@ -10,12 +10,14 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { labNavigation } from '@/navigation/lab';
-import { Link } from '@inertiajs/react';
+import { navegacaoDoPapel } from '@/navigation/lab';
+import type { SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { setOpenMobile } = useSidebar();
+    const { laboratorio } = usePage<SharedData>().props;
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader className="pr-14 md:pr-2">
@@ -31,7 +33,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={labNavigation} />
+                <NavMain items={navegacaoDoPapel(laboratorio?.areas ?? [])} />
             </SidebarContent>
 
             <SidebarFooter>

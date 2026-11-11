@@ -16,6 +16,7 @@ use Vidra\Shared\Infrastructure\Tenancy\Rls;
 
 /** Tabelas com laboratorio_id que, de propósito, não ficam sob RLS. */
 const TABELAS_SEM_RLS = [
+    'convites', // global: o convidado aceita pelo hash antes de ter acesso ao laboratório
     'laboratorio_usuario', // mapa de acessos: lido antes de existir um laboratório atual
 ];
 

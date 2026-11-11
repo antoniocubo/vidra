@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): void {
-    require __DIR__.'/lab/veterinaria.php';
-    require __DIR__.'/lab/catalogo.php';
+    // Cada grupo exige uma área do papel (Vidra\Acesso\Domain\Papel).
+    Route::middleware('area:cadastros')->group(__DIR__.'/lab/veterinaria.php');
+    Route::middleware('area:exames')->group(__DIR__.'/lab/catalogo.php');
     require __DIR__.'/lab/pedidos.php';
-    require __DIR__.'/lab/bancada.php';
+    Route::middleware('area:bancada')->group(__DIR__.'/lab/bancada.php');
     require __DIR__.'/lab/laudos.php';
+    Route::middleware('area:equipe')->group(__DIR__.'/lab/equipe.php');
 });

@@ -21,7 +21,7 @@ export interface NavItem {
     isActive?: boolean;
 }
 
-export type Laboratorio = { id: string; nome: string; papel: string; eRt: boolean };
+export type Laboratorio = { id: string; nome: string; papel: string; eRt: boolean; areas: string[] };
 
 export interface SharedData {
     laboratorio: Laboratorio | null;

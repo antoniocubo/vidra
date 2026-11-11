@@ -66,7 +66,7 @@ it('compartilha o laboratório atual e todos os acessos no painel', function ():
     Laboratorios::usuarioEm($beta, 'rt', $usuario);
     $this->actingAs($usuario)->withSession(['laboratorio_id' => $beta])->get('/dashboard')
         ->assertOk()->assertInertia(fn (Assert $page) => $page->component('dashboard')
-        ->where('laboratorio', ['id' => $beta, 'nome' => 'Beta', 'papel' => 'rt', 'eRt' => false])
-        ->has('laboratorios', 2)->where('laboratorios.0', ['id' => $alfa, 'nome' => 'Alfa', 'papel' => 'recepcao', 'eRt' => false])
-        ->where('laboratorios.1', ['id' => $beta, 'nome' => 'Beta', 'papel' => 'rt', 'eRt' => false]));
+        ->where('laboratorio', ['id' => $beta, 'nome' => 'Beta', 'papel' => 'rt', 'eRt' => false, 'areas' => Vidra\Acesso\Domain\Papel::Rt->areas()])
+        ->has('laboratorios', 2)->where('laboratorios.0', ['id' => $alfa, 'nome' => 'Alfa', 'papel' => 'recepcao', 'eRt' => false, 'areas' => Vidra\Acesso\Domain\Papel::Recepcao->areas()])
+        ->where('laboratorios.1', ['id' => $beta, 'nome' => 'Beta', 'papel' => 'rt', 'eRt' => false, 'areas' => Vidra\Acesso\Domain\Papel::Rt->areas()]));
 });
