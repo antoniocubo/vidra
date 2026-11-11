@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['laboratorio' => DefinirLaboratorioAtual::class]);
+        $middleware->alias(['laboratorio' => DefinirLaboratorioAtual::class, 'area' => App\Http\Middleware\ExigirArea::class]);
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -24,4 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['senha']);
+
+        if (config('sentry.dsn')) {
+            Sentry\Laravel\Integration::handles($exceptions);
+        }
     })->create();

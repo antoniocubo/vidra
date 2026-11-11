@@ -1,0 +1,111 @@
+# Produção num servidor só. Rodar da raiz do repositório:
+#   docker compose -f infra/producao/docker-compose.yml --env-file platform/.env up -d
+# Só o caddy publica portas (80/443); o resto vive na rede interna.
+name: vidra
+
+x-app: &app
+  image: vidra-app:latest
+  restart: unless-stopped
+  env_file: ../../platform/.env
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_started }
+  networks: [interna, publica] # publica = saída para SES, S3, Sentry e Asaas
+  volumes:
+    - storage:/app/storage
+
+services:
+  app:
+    <<: *app
+    build:
+      context: ../../platform
+      dockerfile: ../infra/producao/Dockerfile
+
+  horizon:
+    <<: *app
+    command: php artisan horizon
+    stop_grace_period: 60s
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vidra
+      POSTGRES_USER: vidra
+      POSTGRES_PASSWORD: ${DB_SISTEMA_PASSWORD:?defina no platform/.env}
+      VIDRA_APP_PASSWORD: ${DB_PASSWORD:?defina no platform/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../postgres/01-vidra-app.sql:/sql/01-vidra-app.sql:ro
+      - ./postgres-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vidra -d vidra"]
+      interval: 10s
+      retries: 6
+    networks: [interna]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?defina no platform/.env}
+    volumes:
+      - redisdata:/data
+    networks: [interna]
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    networks: [interna]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?defina no platform/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    networks: [interna, publica]
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c", "apk add --no-cache aws-cli >/dev/null && exec /backup-loop.sh"]
+    environment:
+      POSTGRES_USER: vidra
+      POSTGRES_DB: vidra
+      POSTGRES_PASSWORD: ${DB_SISTEMA_PASSWORD}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${BACKUP_AWS_REGION:-sa-east-1}
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ./backup-loop.sh:/backup-loop.sh:ro
+      - backups:/backups
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [interna, publica]
+
+networks:
+  interna:
+    internal: true
+  publica: {}
+
+volumes:
+  pgdata:
+  redisdata:
+  storage:
+  backups:
+  caddy_data:
+  caddy_config:

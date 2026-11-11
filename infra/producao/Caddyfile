@@ -1,0 +1,23 @@
+# Borda: TLS automático (Let's Encrypt) para os quatro hosts, todos para a mesma aplicação.
+# A aplicação decide a superfície pelo host (Host é repassado); o X-Forwarded-* já vem do Caddy.
+{
+	email {$ACME_EMAIL}
+}
+
+(seguranca) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		-Server
+	}
+}
+
+vidralab.com.br, app.vidralab.com.br, vet.vidralab.com.br, laudo.vidralab.com.br {
+	import seguranca
+	encode zstd gzip
+	reverse_proxy app:8080
+}
+
+# vidralab.com.br pode apontar para o site estático depois; por ora é a própria aplicação (rota do site).

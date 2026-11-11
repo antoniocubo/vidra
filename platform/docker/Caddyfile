@@ -1,0 +1,12 @@
+# Caddy interno do container da aplicação: HTTP puro na 8080. O TLS é do caddy de borda.
+{
+	auto_https off
+	admin off
+	frankenphp
+}
+
+:8080 {
+	root * /app/public
+	encode zstd gzip
+	php_server
+}

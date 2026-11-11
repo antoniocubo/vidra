@@ -39,12 +39,22 @@ return [
             'throw' => false,
         ],
 
-        // PDFs dos laudos. Em produção vira S3 (sa-east-1).
-        'laudos' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/laudos'),
-            'throw' => true,
-        ],
+        // PDFs dos laudos: privados. LAUDOS_DISK=local (padrão) ou s3 (produção, sa-east-1).
+        // Sem 'visibility' e sem 'url': o acesso é sempre por rota autenticada ou link com código.
+        'laudos' => env('LAUDOS_DISK', 'local') === 's3'
+            ? [
+                'driver' => 's3',
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                'region' => env('AWS_LAUDOS_REGION', 'sa-east-1'),
+                'bucket' => env('AWS_BUCKET'),
+                'throw' => true,
+            ]
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/private/laudos'),
+                'throw' => true,
+            ],
 
         'public' => [
             'driver' => 'local',
