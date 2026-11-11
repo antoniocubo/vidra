@@ -17,5 +17,6 @@ Route::middleware(['auth', 'laboratorio'])->name('lab.')->group(function (): voi
     require __DIR__.'/lab/pedidos.php';
     Route::middleware('area:bancada')->group(__DIR__.'/lab/bancada.php');
     require __DIR__.'/lab/laudos.php';
+    Route::middleware('area:financeiro')->group(__DIR__.'/lab/financeiro.php');
     Route::middleware('area:equipe')->group(__DIR__.'/lab/equipe.php');
 });

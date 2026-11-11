@@ -31,6 +31,7 @@ final class VeterinariaServiceProvider extends ServiceProvider
         \Vidra\Pedidos\Domain\Portas\Solicitantes::class => Pedidos\SolicitantesVeterinaria::class,
         \Vidra\Pedidos\Domain\Portas\Pagadores::class => Pedidos\PagadoresVeterinaria::class,
         \Vidra\Pedidos\Domain\Portas\Vocabulario::class => Pedidos\VocabularioVeterinaria::class,
+        \Vidra\Financeiro\Domain\DadosDosPagadores::class => Financeiro\DadosDosPagadoresVeterinaria::class,
         Transacao::class => TransacaoEloquent::class,
     ];
 }
