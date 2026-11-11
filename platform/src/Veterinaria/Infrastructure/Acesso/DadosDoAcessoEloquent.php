@@ -45,6 +45,7 @@ final readonly class DadosDoAcessoEloquent implements DadosDoAcesso
     public function registrarAcesso(LaboratorioDoVeterinario $acesso): void
     {
         // O marco é por vínculo e sobrevive ao logout, sem criar outra tabela de acesso.
-        Cache::forever('vet:ultimo-acesso:'.$acesso->vinculoId, now()->utc()->format('Y-m-d H:i:s.u'));
+        // No segundo, arredondado para cima: liberado_em é gravado sem fração e o Postgres arredonda.
+        Cache::forever('vet:ultimo-acesso:'.$acesso->vinculoId, now()->utc()->ceilSecond()->format('Y-m-d H:i:s'));
     }
 }

@@ -155,7 +155,7 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
                     }
                 />
                 {imprimir && (
-                    <Alert tone="ok" title={`Pedido salvo. ${pedido.etiquetas === 1 ? 'A etiqueta' : 'As etiquetas'} abriram em outra aba.`}>
+                    <Alert tone="ok" title={`Pedido salvo. ${pedido.etiquetas === 1 ? 'A etiqueta abriu' : 'As etiquetas abriram'} em outra aba.`}>
                         Se nada abriu, use o botão &quot;Imprimir etiquetas&quot; aqui em cima.
                     </Alert>
                 )}
