@@ -27,3 +27,4 @@ require __DIR__.'/auth.php';
 require __DIR__.'/acesso.php';
 
 require __DIR__.'/laudo.php';
+require __DIR__.'/vet.php';

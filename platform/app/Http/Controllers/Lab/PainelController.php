@@ -13,7 +13,7 @@ final class PainelController
 {
     public function __invoke(Request $request, ConsultarPainel $consultar): Response
     {
-        $nome = explode(' ', trim((string) $request->user()?->name))[0];
+        $nome = explode(' ', trim((string) $request->user('web')?->name))[0];
 
         return Inertia::render('dashboard', ['painel' => $consultar(), 'primeiroNome' => $nome]);
     }

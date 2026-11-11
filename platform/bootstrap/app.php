@@ -16,7 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['laboratorio' => DefinirLaboratorioAtual::class, 'area' => App\Http\Middleware\ExigirArea::class]);
+        $middleware->alias([
+            'laboratorio' => DefinirLaboratorioAtual::class,
+            'area' => App\Http\Middleware\ExigirArea::class,
+            'laboratorio.vet' => App\Http\Middleware\DefinirLaboratorioDoVeterinario::class,
+        ]);
+        // O acesso vet tem login próprio; o resto vai para o login da equipe.
+        $middleware->redirectGuestsTo(fn (Illuminate\Http\Request $request): string => $request->routeIs('vet.*') ? route('vet.entrar') : route('login'));
+        $middleware->redirectUsersTo(fn (Illuminate\Http\Request $request): string => $request->routeIs('vet.*') ? route('vet.inicio') : route('dashboard'));
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

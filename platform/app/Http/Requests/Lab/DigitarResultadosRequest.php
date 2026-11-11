@@ -23,7 +23,7 @@ final class DigitarResultadosRequest extends FormRequest
     public function toInput(string $item): DigitarResultadosInput
     {
         /** @var array<string,array{valor:?string,texto:?string}> $valores */ $valores = $this->validated('valores');
-        $user = $this->user();
+        $user = $this->user('web');
         assert($user !== null);
 
         return new DigitarResultadosInput($item, $valores, (int) $user->getAuthIdentifier(), $user->name);

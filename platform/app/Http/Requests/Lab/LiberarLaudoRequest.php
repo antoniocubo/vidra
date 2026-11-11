@@ -22,7 +22,7 @@ final class LiberarLaudoRequest extends FormRequest
 
     public function toInput(string $pedido): LiberarLaudoInput
     {
-        $user = $this->user();
+        $user = $this->user('web');
         assert($user !== null);
 
         return new LiberarLaudoInput($pedido, (int) $user->getAuthIdentifier(), $user->name, $this->filled('observacao') ? $this->string('observacao')->value() : null);

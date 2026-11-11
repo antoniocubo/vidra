@@ -42,6 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Acesso do veterinário: conta própria, nunca a da equipe do laboratório.
+        'vet' => [
+            'driver' => 'session',
+            'provider' => 'contas_veterinario',
+        ],
     ],
 
     /*
@@ -62,6 +68,11 @@ return [
     */
 
     'providers' => [
+        'contas_veterinario' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\ContaVeterinario::class,
+        ],
+
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
@@ -93,6 +104,13 @@ return [
     */
 
     'passwords' => [
+        'contas_veterinario' => [
+            'provider' => 'contas_veterinario',
+            'table' => 'password_reset_tokens_vet',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
