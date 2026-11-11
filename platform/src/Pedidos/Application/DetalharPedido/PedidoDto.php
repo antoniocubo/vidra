@@ -10,7 +10,7 @@ final readonly class PedidoDto
      * @param  array{nome: string, descricao: string, especieCurta: string, responsavelNome: string, rotuloDoResponsavel: string}  $paciente
      * @param  array{nome: string, registro: string}  $solicitante
      * @param  array{tipo: string, rotulo: string, descontoPercentual: int}  $pagador
-     * @param  list<array{id: string, codigo: string, nome: string, material: string, situacao: string, situacaoRotulo: string, precoCentavos: int}>  $itens
+     * @param  list<array{exameId: string, id: string, codigo: string, nome: string, material: string, situacao: string, situacaoRotulo: string, precoCentavos: int, cancelamento: null|array{motivo: string, por: string, em: string}}>  $itens
      * @param  list<array{id: string, codigo: string, material: string, situacao: string, recebidaEm: ?string}>  $amostras
      */
     public function __construct(
@@ -28,5 +28,7 @@ final readonly class PedidoDto
         public array $amostras,
         public int $totalCentavos,
         public int $etiquetas,
+        public bool $podeCancelar,
+        public bool $podeIncluirExame,
     ) {}
 }

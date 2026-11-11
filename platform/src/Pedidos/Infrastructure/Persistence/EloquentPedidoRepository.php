@@ -7,6 +7,7 @@ namespace Vidra\Pedidos\Infrastructure\Persistence;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Vidra\Pedidos\Domain\Pedido\Cancelamento;
 use Vidra\Pedidos\Domain\Pedido\ItemDoPedido;
 use Vidra\Pedidos\Domain\Pedido\ItemId;
 use Vidra\Pedidos\Domain\Pedido\Pagador;
@@ -24,6 +25,20 @@ final readonly class EloquentPedidoRepository implements PedidoRepository
     private const string SEQUENCIA_DO_PROTOCOLO = 'protocolo';
 
     public function __construct(private LaboratorioAtual $laboratorio) {}
+
+    /**
+     * @param  list<int>  $ids
+     * @return array<int, string>
+     */
+    public function nomesPorIds(array $ids): array
+    {
+        // Os ids vêm exclusivamente dos itens de pedidos já isolados pelo laboratório.
+        $this->laboratorio->id();
+        /** @var array<int, string> $nomes */
+        $nomes = DB::table('users')->whereIn('id', $ids)->pluck('name', 'id')->all();
+
+        return $nomes;
+    }
 
     public function nextIdentity(): PedidoId
     {
@@ -77,6 +92,9 @@ final readonly class EloquentPedidoRepository implements PedidoRepository
                 'preco_centavos' => $item->precoCentavos,
                 'situacao' => $item->situacao->value,
                 'ordem' => $ordem,
+                'cancelado_motivo' => $item->cancelamento?->motivo,
+                'cancelado_por' => $item->cancelamento?->por,
+                'cancelado_em' => $item->cancelamento?->em,
             ]);
         }
     }
@@ -131,6 +149,7 @@ final readonly class EloquentPedidoRepository implements PedidoRepository
             $itens[$item->pedido_id][] = ItemDoPedido::restaurar(
                 new ItemId($item->id), $item->exame_id, $item->codigo, $item->nome, $item->setor, $item->material,
                 $item->preco_tabela_centavos, $item->desconto_percentual, $item->preco_centavos, SituacaoDoItem::from($item->situacao),
+                $item->cancelado_motivo === null || $item->cancelado_por === null || $item->cancelado_em === null ? null : new Cancelamento($item->cancelado_motivo, $item->cancelado_por, $item->cancelado_em->toDateTimeImmutable()),
             );
         }
 

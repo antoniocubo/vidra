@@ -41,8 +41,12 @@ final readonly class PainelDeAmostras
     {
         $dia = DiaLocal::de($data, $this->relogio->agora());
         $recebidas = $this->amostras->recebidasEntre($dia->inicio, $dia->fim);
-        $aguardando = $this->amostras->aguardandoChegada(self::LIMITE_AGUARDANDO);
+        $aguardando = array_values(array_filter($this->amostras->aguardandoChegada(self::LIMITE_AGUARDANDO), fn (Amostra $a): bool => $a->itemIds !== []));
         $selecionada = $amostraId === null ? null : ($this->amostras->porId(new AmostraId($amostraId)) ?? throw AmostraNaoEncontrada::para());
+
+        if ($selecionada !== null && $selecionada->itemIds === []) {
+            $selecionada = null;
+        }
 
         $todas = [...$recebidas, ...$aguardando, ...($selecionada === null ? [] : [$selecionada])];
         $pedidos = $this->pedidos->porIds(array_values(array_unique(array_map(fn (Amostra $a): string => $a->pedidoId->value, $todas))));

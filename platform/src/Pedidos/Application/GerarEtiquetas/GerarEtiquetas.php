@@ -22,7 +22,7 @@ final readonly class GerarEtiquetas
     {
         $pedido = $this->pedidos->porId(new PedidoId($pedidoId)) ?? throw PedidoNaoEncontrado::para();
         $paciente = $this->pacientes->resumo($pedido->pacienteId);
-        $validas = array_filter($this->amostras->doPedido($pedido->id), fn (Amostra $a): bool => $a->situacao() !== SituacaoDaAmostra::Rejeitada);
+        $validas = array_filter($this->amostras->doPedido($pedido->id), fn (Amostra $a): bool => $a->itemIds !== [] && $a->situacao() !== SituacaoDaAmostra::Rejeitada);
 
         return array_values(array_map(fn (Amostra $a): EtiquetaDto => new EtiquetaDto(
             $a->codigo->value, $this->barras->svg($a->codigo->value), $paciente->nome ?? '', $paciente->especieCurta ?? '', $a->material, (string) $pedido->protocolo,

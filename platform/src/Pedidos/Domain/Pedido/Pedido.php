@@ -83,7 +83,7 @@ final class Pedido
     }
 
     /** Cancela um exame; o pedido precisa continuar com pelo menos um. */
-    public function cancelarItem(ItemId $id): void
+    public function cancelarItem(ItemId $id, Cancelamento $cancelamento): void
     {
         $this->item($id);
         $restantes = array_filter($this->itens, fn (ItemDoPedido $item): bool => ! $item->id->equals($id) && ! $item->cancelado());
@@ -91,7 +91,35 @@ final class Pedido
             throw PedidoInvalido::semExameAtivo();
         }
 
-        $this->trocarItens($id, fn (ItemDoPedido $item): ItemDoPedido => $item->cancelar());
+        $this->trocarItens($id, fn (ItemDoPedido $item): ItemDoPedido => $item->cancelar($cancelamento));
+    }
+
+    /** Cancela todos os exames ativos. Depois da liberação, só retificando o laudo. */
+    public function cancelar(Cancelamento $cancelamento): void
+    {
+        if ($this->situacao() === SituacaoDoPedido::Cancelado) {
+            throw PedidoInvalido::jaCancelado();
+        }
+        if ($this->temItemLiberado()) {
+            throw PedidoInvalido::jaLiberado();
+        }
+
+        $this->itens = array_map(fn (ItemDoPedido $item): ItemDoPedido => $item->cancelado() ? $item : $item->cancelar($cancelamento), $this->itens);
+    }
+
+    /** Inclui um exame num pedido em andamento. Ele entra aguardando amostra. */
+    public function adicionarItem(ItemDoPedido $novo): void
+    {
+        if (in_array($this->situacao(), [SituacaoDoPedido::Cancelado, SituacaoDoPedido::Liberado], true) || $this->temItemLiberado()) {
+            throw PedidoInvalido::naoAceitaExame();
+        }
+        foreach ($this->itens as $item) {
+            if ($item->exameId === $novo->exameId && ! $item->cancelado()) {
+                throw PedidoInvalido::exameRepetido($item->nome);
+            }
+        }
+
+        $this->itens[] = $novo;
     }
 
     /** @param list<string> $itemIds os itens de uma amostra que acabou de chegar */
@@ -133,6 +161,11 @@ final class Pedido
             $todos(SituacaoDoItem::ResultadoDigitado, SituacaoDoItem::Liberado) => SituacaoDoPedido::AguardandoLiberacao,
             default => SituacaoDoPedido::EmAnalise,
         };
+    }
+
+    private function temItemLiberado(): bool
+    {
+        return array_filter($this->itens, fn (ItemDoPedido $item): bool => $item->situacao === SituacaoDoItem::Liberado) !== [];
     }
 
     public function urgente(): bool

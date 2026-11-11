@@ -19,7 +19,7 @@ final class Amostra
         public readonly PedidoId $pedidoId,
         public readonly CodigoDaAmostra $codigo,
         public readonly string $material,
-        public readonly array $itemIds,
+        public private(set) array $itemIds,
         private SituacaoDaAmostra $situacao,
         private ?DateTimeImmutable $recebidaEm,
         private ?int $recebidaPor,
@@ -107,6 +107,27 @@ final class Amostra
         $this->recoleta = $novoCodigo;
 
         return self::gerar($novoId, $this->laboratorioId, $this->pedidoId, $novoCodigo, $this->material, $this->itemIds);
+    }
+
+    public function incluirItem(string $itemId): void
+    {
+        $this->exigirPendente();
+        if (! in_array($itemId, $this->itemIds, true)) {
+            $this->itemIds[] = $itemId;
+        }
+    }
+
+    public function retirarItem(string $itemId): void
+    {
+        $this->exigirPendente();
+        $this->itemIds = array_values(array_filter($this->itemIds, fn (string $id): bool => $id !== $itemId));
+    }
+
+    private function exigirPendente(): void
+    {
+        if ($this->situacao !== SituacaoDaAmostra::Aguardando) {
+            throw TriagemInvalida::jaTriada($this->codigo->value);
+        }
     }
 
     public function situacao(): SituacaoDaAmostra

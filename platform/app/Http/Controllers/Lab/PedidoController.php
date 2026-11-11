@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Lab\AbrirPedidoRequest;
+use App\Http\Requests\Lab\CancelarRequest;
+use App\Http\Requests\Lab\IncluirExameRequest;
 use Closure;
 use DateTimeZone;
 use Illuminate\Contracts\View\View;
@@ -18,8 +20,11 @@ use Inertia\Response;
 use Vidra\Pedidos\Application\AbrirPedido\AbrirPedido;
 use Vidra\Pedidos\Application\BuscarExames\BuscarExames;
 use Vidra\Pedidos\Application\BuscarPacientes\BuscarPacientes;
+use Vidra\Pedidos\Application\CancelarExame\CancelarExame;
+use Vidra\Pedidos\Application\CancelarPedido\CancelarPedido;
 use Vidra\Pedidos\Application\DetalharPedido\DetalharPedido;
 use Vidra\Pedidos\Application\GerarEtiquetas\GerarEtiquetas;
+use Vidra\Pedidos\Application\IncluirExame\IncluirExame;
 use Vidra\Pedidos\Application\ListarPedidos\ListarPedidos;
 use Vidra\Pedidos\Application\ListarPedidos\ListarPedidosInput;
 use Vidra\Pedidos\Application\PrepararNovoPedido\PrepararNovoPedido;
@@ -78,13 +83,16 @@ final class PedidoController extends Controller
             ->with('success', "Pedido {$aberto->protocolo} salvo.");
     }
 
-    public function show(Request $request, string $pedido, DetalharPedido $detalhar, \Vidra\Laudos\Application\LaudoDoPedido $laudo, \Vidra\Laudos\Application\ConsultarEntrega $entrega): Response
+    public function show(Request $request, string $pedido, DetalharPedido $detalhar, BuscarExames $exames, \Vidra\Laudos\Application\LaudoDoPedido $laudo, \Vidra\Laudos\Application\ConsultarEntrega $entrega): Response
     {
+        $request->validate(['busca_exame' => ['nullable', 'string', 'max:100']]);
         $liberado = $laudo($pedido);
 
         return Inertia::render('lab/pedidos/show', [
             'pedido' => $this->executar(fn () => $detalhar($pedido)),
             'imprimir' => $request->boolean('imprimir'),
+            'exames' => fn (): array => $exames($request->string('busca_exame')->value()),
+            'novaAmostra' => $request->boolean('nova_amostra'),
             'entrega' => $entrega($pedido),
             'laudo' => $liberado === null ? null : [
                 'numero' => $liberado->numero, 'rt' => $liberado->rtNome,
@@ -93,6 +101,28 @@ final class PedidoController extends Controller
                 'codigo' => $liberado->codigoAcesso,
             ],
         ]);
+    }
+
+    public function cancelar(CancelarRequest $request, string $pedido, CancelarPedido $cancelar): RedirectResponse
+    {
+        $this->executar(fn () => $cancelar($request->paraPedido($pedido)));
+
+        return to_route('lab.pedidos.show', ['pedido' => $pedido])->with('success', 'Pedido cancelado.');
+    }
+
+    public function cancelarExame(CancelarRequest $request, string $pedido, string $item, CancelarExame $cancelar): RedirectResponse
+    {
+        $this->executar(fn () => $cancelar($request->paraExame($pedido, $item)));
+
+        return to_route('lab.pedidos.show', ['pedido' => $pedido])->with('success', 'Exame cancelado.');
+    }
+
+    public function incluirExame(IncluirExameRequest $request, string $pedido, IncluirExame $incluir): RedirectResponse
+    {
+        $nova = $this->executar(fn () => $incluir($request->toInput($pedido)));
+
+        return to_route('lab.pedidos.show', ['pedido' => $pedido, ...($nova ? ['nova_amostra' => 1] : [])])
+            ->with('success', $nova ? 'Exame incluído. Imprima a etiqueta da nova amostra.' : 'Exame incluído na amostra pendente.');
     }
 
     public function etiquetas(string $pedido, GerarEtiquetas $gerar): View

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Pedidos\Application\DetalharPedido;
 
+use Vidra\Pedidos\Application\CancelarExame\NomesDosCanceladores;
 use Vidra\Pedidos\Application\Formato;
 use Vidra\Pedidos\Domain\Amostra\Amostra;
 use Vidra\Pedidos\Domain\Amostra\AmostraRepository;
@@ -27,6 +28,7 @@ final readonly class DetalharPedido
         private Solicitantes $solicitantes,
         private Pagadores $pagadores,
         private Vocabulario $vocabulario,
+        private NomesDosCanceladores $canceladores,
     ) {}
 
     public function __invoke(string $pedidoId): PedidoDto
@@ -36,7 +38,10 @@ final readonly class DetalharPedido
         $solicitante = $this->solicitantes->resumo($pedido->solicitanteId);
         $textos = $this->vocabulario->textos();
         $clinica = $pedido->pagador->clinicaId === null ? null : $this->pagadores->clinica($pedido->pagador->clinicaId);
-        $amostras = $this->amostras->doPedido($pedido->id);
+        $amostras = array_values(array_filter($this->amostras->doPedido($pedido->id), fn (Amostra $a): bool => $a->itemIds !== []));
+        $nomes = $this->canceladores->nomesPorIds(array_values(array_unique(array_filter(array_map(fn (ItemDoPedido $i): ?int => $i->cancelamento?->por, $pedido->itens())))));
+        $podeEditar = $pedido->situacao() !== \Vidra\Pedidos\Domain\Pedido\SituacaoDoPedido::Cancelado
+            && array_filter($pedido->itens(), fn (ItemDoPedido $i): bool => $i->situacao === \Vidra\Pedidos\Domain\Pedido\SituacaoDoItem::Liberado) === [];
         $estado = $pedido->situacao();
 
         $rotuloDoPagador = match ($pedido->pagador->tipo) {
@@ -63,7 +68,8 @@ final readonly class DetalharPedido
             Formato::dataEHora($pedido->criadoEm),
             $pedido->observacao,
             array_map(fn (ItemDoPedido $i): array => [
-                'id' => $i->id->value, 'codigo' => $i->codigo, 'nome' => $i->nome, 'material' => $i->material,
+                'exameId' => $i->exameId, 'id' => $i->id->value, 'codigo' => $i->codigo, 'nome' => $i->nome, 'material' => $i->material,
+                'cancelamento' => $i->cancelamento === null ? null : ['motivo' => $i->cancelamento->motivo, 'por' => $nomes[$i->cancelamento->por] ?? 'Usuário removido', 'em' => Formato::dataEHora($i->cancelamento->em)],
                 'situacao' => $i->situacao->value, 'situacaoRotulo' => $i->situacao->rotulo(), 'precoCentavos' => $i->precoCentavos,
             ], $pedido->itens()),
             array_map(fn (Amostra $a): array => [
@@ -72,6 +78,8 @@ final readonly class DetalharPedido
             ], $amostras),
             $pedido->total(),
             count(array_filter($amostras, fn (Amostra $a): bool => $a->situacao() !== SituacaoDaAmostra::Rejeitada)),
+            $podeEditar,
+            $podeEditar,
         );
     }
 }

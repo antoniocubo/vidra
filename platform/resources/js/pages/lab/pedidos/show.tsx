@@ -1,8 +1,23 @@
-import { Alert, Button, Card, DataTable, DetailList, PageHeader, StatusBadge, StatusStepper, Toast, useFlashToast } from '@/components/vidra';
+import {
+    Alert,
+    Button,
+    Card,
+    ConfirmDialog,
+    DataTable,
+    DetailList,
+    FormField,
+    PageHeader,
+    StatusBadge,
+    StatusStepper,
+    TextInput,
+    Toast,
+    useFlashToast,
+} from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Printer } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { BuscaDeExame, type Exame } from './busca-de-exame';
 import { reais, tomDaSituacao } from './formato';
 
 type Pedido = {
@@ -16,13 +31,27 @@ type Pedido = {
     situacaoRotulo: string;
     criadoEm: string;
     observacao: string | null;
-    itens: { id: string; codigo: string; nome: string; material: string; situacao: string; situacaoRotulo: string; precoCentavos: number }[];
+    itens: {
+        exameId: string;
+        cancelamento: { motivo: string; por: string; em: string } | null;
+        id: string;
+        codigo: string;
+        nome: string;
+        material: string;
+        situacao: string;
+        situacaoRotulo: string;
+        precoCentavos: number;
+    }[];
     amostras: { id: string; codigo: string; material: string; situacao: string; recebidaEm: string | null }[];
     totalCentavos: number;
     etiquetas: number;
+    podeCancelar: boolean;
+    podeIncluirExame: boolean;
 };
 type Props = {
     pedido: Pedido;
+    exames: Exame[];
+    novaAmostra: boolean;
     imprimir: boolean;
     entrega: { pdfPronto: boolean; pdfErro: string | null; whatsapp: string | null; link: string; entregas: string[] } | null;
     laudo: { numero: string; rt: string; registro: string; usuario: string; quando: string; codigo: string } | null;
@@ -40,8 +69,29 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
     rejeitada: { rotulo: 'Rejeitada', tom: 'crit' },
 };
 
-export default function Pedido({ pedido, imprimir, laudo, entrega }: Props) {
+export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaAmostra }: Props) {
     const flash = useFlashToast();
+    const [cancelar, setCancelar] = useState<{ item?: string; nome: string } | null>(null);
+    const cancelamento = useForm({ motivo: '' });
+    const inclusao = useForm({ exame_id: '' });
+    const errosCancelamento: Record<string, string | undefined> = cancelamento.errors;
+    const errosInclusao: Record<string, string | undefined> = inclusao.errors;
+    const abrirCancelamento = (alvo: { item?: string; nome: string }) => {
+        cancelamento.reset();
+        cancelamento.clearErrors();
+        setCancelar(alvo);
+    };
+    const confirmarCancelamento = () => {
+        if (!cancelar) return;
+        if (!cancelamento.data.motivo.trim()) {
+            cancelamento.setError('motivo', 'Escreva o motivo do cancelamento.');
+            return;
+        }
+        const url = cancelar.item
+            ? route('lab.pedidos.itens.cancelar', { pedido: pedido.id, item: cancelar.item })
+            : route('lab.pedidos.cancelar', { pedido: pedido.id });
+        cancelamento.post(url, { preserveScroll: true, onSuccess: () => setCancelar(null) });
+    };
     const etiquetas = route('lab.pedidos.etiquetas', { pedido: pedido.id });
 
     // Depois de salvar, tenta abrir as etiquetas numa aba nova; se o navegador bloquear, o botão está logo abaixo.
@@ -72,6 +122,11 @@ export default function Pedido({ pedido, imprimir, laudo, entrega }: Props) {
                     description={pedido.paciente.descricao}
                     actions={
                         <>
+                            {pedido.podeCancelar && (
+                                <Button variant="danger" onClick={() => abrirCancelamento({ nome: 'pedido' })}>
+                                    Cancelar pedido
+                                </Button>
+                            )}
                             {pedido.prioridade === 'urgente' && <StatusBadge tone="crit">Urgente</StatusBadge>}
                             <StatusBadge tone={tomDaSituacao[pedido.situacao] ?? 'neutral'}>{pedido.situacaoRotulo}</StatusBadge>
                             <Button variant="secondary" icon={Printer} asChild>
@@ -204,18 +259,60 @@ export default function Pedido({ pedido, imprimir, laudo, entrega }: Props) {
                     </Card>
                 )}
                 <Card title="Exames">
+                    {pedido.podeIncluirExame && (
+                        <div className="mb-4">
+                            <BuscaDeExame
+                                exames={exames}
+                                desconto={pedido.pagador.tipo === 'clinica' ? pedido.pagador.descontoPercentual : 0}
+                                escolhidos={pedido.itens.filter((i) => i.situacao !== 'cancelado').map((i) => i.exameId)}
+                                disabled={inclusao.processing}
+                                error={errosInclusao.exame_id ?? errosInclusao.exame_ids ?? errosInclusao.form}
+                                onEscolher={(exame) => {
+                                    inclusao.transform(() => ({ exame_id: exame.id }));
+                                    inclusao.post(route('lab.pedidos.itens.store', { pedido: pedido.id }), { preserveScroll: true });
+                                }}
+                            />
+                        </div>
+                    )}
                     <DataTable
                         caption="Exames do pedido"
                         rows={pedido.itens}
                         getRowId={(i) => i.id}
                         columns={[
                             { key: 'codigo', header: 'Código', mono: true, cell: (i) => i.codigo },
-                            { key: 'nome', header: 'Exame', cell: (i) => i.nome },
+                            {
+                                key: 'nome',
+                                header: 'Exame',
+                                cell: (i) => (
+                                    <div>
+                                        <span className={i.situacao === 'cancelado' ? 'text-muted-foreground line-through' : ''}>{i.nome}</span>
+                                        {i.cancelamento && (
+                                            <p className="text-muted-foreground mt-1 text-xs">
+                                                Motivo: {i.cancelamento.motivo} · por {i.cancelamento.por} em {i.cancelamento.em}
+                                            </p>
+                                        )}
+                                    </div>
+                                ),
+                            },
                             { key: 'material', header: 'Material', cell: (i) => i.material },
                             {
                                 key: 'situacao',
                                 header: 'Situação',
-                                cell: (i) => <StatusBadge tone={tomDaSituacao[i.situacao] ?? 'neutral'}>{i.situacaoRotulo}</StatusBadge>,
+                                cell: (i) => (
+                                    <StatusBadge tone={i.situacao === 'cancelado' ? 'neutral' : (tomDaSituacao[i.situacao] ?? 'neutral')}>
+                                        {i.situacaoRotulo}
+                                    </StatusBadge>
+                                ),
+                            },
+                            {
+                                key: 'acoes',
+                                header: 'Ações',
+                                cell: (i) =>
+                                    i.situacao !== 'cancelado' && i.situacao !== 'liberado' ? (
+                                        <Button variant="ghost" onClick={() => abrirCancelamento({ item: i.id, nome: i.nome })}>
+                                            Cancelar exame
+                                        </Button>
+                                    ) : null,
                             },
                             { key: 'preco', header: 'Preço', align: 'right', mono: true, cell: (i) => reais(i.precoCentavos) },
                         ]}
@@ -232,7 +329,39 @@ export default function Pedido({ pedido, imprimir, laudo, entrega }: Props) {
                     />
                 </Card>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
+            <ConfirmDialog
+                open={cancelar !== null}
+                onOpenChange={(open) => {
+                    if (!open && !cancelamento.processing) setCancelar(null);
+                }}
+                title={`Cancelar ${cancelar?.nome ?? 'pedido'}?`}
+                description="O cancelamento fica registrado no pedido com o motivo e quem cancelou."
+                confirmLabel={cancelar?.item ? 'Cancelar exame' : 'Cancelar pedido'}
+                tone="danger"
+                loading={cancelamento.processing}
+                onConfirm={confirmarCancelamento}
+            >
+                <FormField id="motivo-cancelamento" label="Motivo do cancelamento" error={errosCancelamento.motivo}>
+                    <TextInput
+                        id="motivo-cancelamento"
+                        className="h-11"
+                        required
+                        maxLength={500}
+                        value={cancelamento.data.motivo}
+                        onChange={(event) => cancelamento.setData('motivo', event.target.value)}
+                    />
+                </FormField>
+                {errosCancelamento.form && <Alert tone="crit" title={errosCancelamento.form} />}
+            </ConfirmDialog>
+            {flash.message && (
+                <Toast
+                    actionLabel={novaAmostra ? 'Imprimir etiquetas' : undefined}
+                    onAction={() => window.open(etiquetas, '_blank', 'noopener')}
+                    message={flash.message}
+                    onDismiss={flash.dismiss}
+                    className="fixed right-4 bottom-4 z-50"
+                />
+            )}
         </AppLayout>
     );
 }

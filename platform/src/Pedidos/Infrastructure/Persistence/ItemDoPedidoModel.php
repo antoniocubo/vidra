@@ -21,6 +21,9 @@ use Vidra\Shared\Infrastructure\Tenancy\PertenceAoLaboratorio;
  * @property int $desconto_percentual
  * @property int $preco_centavos
  * @property string $situacao
+ * @property ?string $cancelado_motivo
+ * @property ?int $cancelado_por
+ * @property ?\Illuminate\Support\Carbon $cancelado_em
  * @property int $ordem
  */
 final class ItemDoPedidoModel extends Model
@@ -34,6 +37,6 @@ final class ItemDoPedidoModel extends Model
 
     protected function casts(): array
     {
-        return ['preco_tabela_centavos' => 'integer', 'desconto_percentual' => 'integer', 'preco_centavos' => 'integer', 'ordem' => 'integer'];
+        return ['cancelado_em' => 'datetime', 'cancelado_por' => 'integer', 'preco_tabela_centavos' => 'integer', 'desconto_percentual' => 'integer', 'preco_centavos' => 'integer', 'ordem' => 'integer'];
     }
 }

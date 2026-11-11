@@ -17,6 +17,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { BuscaDeExame, type Exame } from './busca-de-exame';
 import { comDesconto, reais } from './formato';
 
 type Clinica = { id: string; nome: string; descontoPercentual: number };
@@ -30,7 +31,6 @@ type Paciente = {
     autorizaEmail: boolean;
     responsavelTelefone: string;
 };
-type Exame = { id: string; codigo: string; nome: string; setor: string; material: string; precoCentavos: number };
 type Textos = {
     paciente: string;
     responsavel: string;
@@ -72,7 +72,7 @@ function useBuscaNoServidor(parametro: string, prop: 'pacientes' | 'exames') {
             () =>
                 router.get(
                     route('lab.pedidos.create'),
-                    { [parametro]: termo },
+                    { ...Object.fromEntries(new URLSearchParams(window.location.search)), [parametro]: termo },
                     { only: [prop], preserveState: true, preserveScroll: true, replace: true },
                 ),
             DEBOUNCE_MS,
@@ -95,9 +95,7 @@ export default function NovoPedido({ solicitantes, clinicasAtivas, pacienteInici
     const [paciente, setPaciente] = useState<Paciente | null>(pacienteInicial);
     const [escolhidos, setEscolhidos] = useState<Exame[]>([]);
     const [buscaPaciente, setBuscaPaciente] = useState('');
-    const [buscaExame, setBuscaExame] = useState('');
     const buscarPacientes = useBuscaNoServidor('busca_paciente', 'pacientes');
-    const buscarExames = useBuscaNoServidor('busca_exame', 'exames');
 
     const solicitante = solicitantes.find((s) => s.id === form.data.solicitante_id) ?? null;
     const clinicas = solicitante?.clinicas ?? clinicasAtivas;
@@ -122,7 +120,6 @@ export default function NovoPedido({ solicitantes, clinicasAtivas, pacienteInici
             setEscolhidos([...escolhidos, exame]);
             form.setData('exame_ids', [...form.data.exame_ids, exame.id]);
         }
-        setBuscaExame('');
     };
     const removerExame = (id: string) => {
         setEscolhidos(escolhidos.filter((e) => e.id !== id));
@@ -132,7 +129,6 @@ export default function NovoPedido({ solicitantes, clinicasAtivas, pacienteInici
         );
     };
 
-    const sugestoes = buscaExame.trim() === '' ? [] : exames.filter((e) => !form.data.exame_ids.includes(e.id));
     const textoDoTotal =
         form.data.pagador === 'clinica'
             ? `Total na tabela ${clinica ? `da ${clinica.nome}` : 'da clínica'} · fatura do mês`
@@ -267,39 +263,13 @@ export default function NovoPedido({ solicitantes, clinicasAtivas, pacienteInici
                         />
                     }
                 >
-                    <div className="relative">
-                        <FormField id="busca-exame" label="Adicionar exame" error={erros.exame_ids ?? erros['exame_ids.0']}>
-                            <TextInput
-                                icon={Search}
-                                value={buscaExame}
-                                placeholder="Digite nome ou código"
-                                autoComplete="off"
-                                onChange={(e) => {
-                                    setBuscaExame(e.target.value);
-                                    buscarExames(e.target.value);
-                                }}
-                            />
-                        </FormField>
-                        {sugestoes.length > 0 && (
-                            <ul className="border-border bg-card absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-md border p-1 shadow-lg">
-                                {sugestoes.map((e) => (
-                                    <li key={e.id}>
-                                        <button
-                                            type="button"
-                                            onClick={() => adicionarExame(e)}
-                                            className="hover:bg-muted focus-visible:outline-brand-500 flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 text-left text-sm focus-visible:outline-2"
-                                        >
-                                            <span>
-                                                <span className="font-mono">{e.codigo}</span> · {e.nome}
-                                                <span className="text-muted-foreground block text-xs">{e.material}</span>
-                                            </span>
-                                            <span className="font-mono text-xs">{reais(comDesconto(e.precoCentavos, desconto))}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
+                    <BuscaDeExame
+                        exames={exames}
+                        desconto={desconto}
+                        escolhidos={form.data.exame_ids}
+                        onEscolher={adicionarExame}
+                        error={erros.exame_ids ?? erros['exame_ids.0']}
+                    />
                     {escolhidos.length === 0 ? (
                         <p className="text-muted-foreground text-sm">Nenhum exame ainda. Digite acima para adicionar.</p>
                     ) : (

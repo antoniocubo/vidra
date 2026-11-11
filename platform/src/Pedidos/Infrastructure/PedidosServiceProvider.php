@@ -17,6 +17,14 @@ use Vidra\Pedidos\Infrastructure\Persistence\EloquentPedidoRepository;
 /** Pacientes, Solicitantes, Pagadores e Vocabulario são ligados pelo provider da linha de produto. */
 final class PedidosServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(\Vidra\Pedidos\Application\CancelarExame\NomesDosCanceladores::class,
+            fn (): \Vidra\Pedidos\Application\CancelarExame\NomesDosCanceladores => new \Vidra\Pedidos\Application\CancelarExame\NomesDosCanceladores(
+                fn (array $ids): array => $this->app->make(EloquentPedidoRepository::class)->nomesPorIds($ids),
+            ));
+    }
+
     /** @var array<class-string, class-string> */
     public array $bindings = [
         PedidoRepository::class => EloquentPedidoRepository::class,

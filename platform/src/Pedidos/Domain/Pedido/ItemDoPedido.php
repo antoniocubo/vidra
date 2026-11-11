@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vidra\Pedidos\Domain\Pedido;
 
+use Vidra\Pedidos\Domain\Pedido\Exceptions\PedidoInvalido;
 use Vidra\Pedidos\Domain\Portas\ExameDoPedido;
 use Vidra\Shared\Domain\ValueObjects\InvalidValue;
 
@@ -24,6 +25,7 @@ final readonly class ItemDoPedido
         public int $descontoPercentual,
         public int $precoCentavos,
         public SituacaoDoItem $situacao,
+        public ?Cancelamento $cancelamento = null,
     ) {}
 
     /** Cota o exame pela tabela do laboratório, com o desconto da clínica quando houver. */
@@ -42,9 +44,9 @@ final readonly class ItemDoPedido
 
     public static function restaurar(
         ItemId $id, string $exameId, string $codigo, string $nome, string $setor, string $material,
-        int $precoTabelaCentavos, int $descontoPercentual, int $precoCentavos, SituacaoDoItem $situacao,
+        int $precoTabelaCentavos, int $descontoPercentual, int $precoCentavos, SituacaoDoItem $situacao, ?Cancelamento $cancelamento = null,
     ): self {
-        return new self($id, $exameId, $codigo, $nome, $setor, $material, $precoTabelaCentavos, $descontoPercentual, $precoCentavos, $situacao);
+        return new self($id, $exameId, $codigo, $nome, $setor, $material, $precoTabelaCentavos, $descontoPercentual, $precoCentavos, $situacao, $cancelamento);
     }
 
     /** Arredonda para o centavo, metade para cima. */
@@ -63,9 +65,17 @@ final readonly class ItemDoPedido
         return $this->situacao === SituacaoDoItem::EmAnalise ? $this->com(SituacaoDoItem::AguardandoAmostra) : $this;
     }
 
-    public function cancelar(): self
+    /** Vale até a liberação; depois disso o caminho é retificar o laudo. */
+    public function cancelar(Cancelamento $cancelamento): self
     {
-        return $this->com(SituacaoDoItem::Cancelado);
+        if ($this->situacao === SituacaoDoItem::Liberado) {
+            throw PedidoInvalido::itemLiberado($this->nome);
+        }
+        if ($this->cancelado()) {
+            throw PedidoInvalido::itemJaCancelado($this->nome);
+        }
+
+        return new self($this->id, $this->exameId, $this->codigo, $this->nome, $this->setor, $this->material, $this->precoTabelaCentavos, $this->descontoPercentual, $this->precoCentavos, SituacaoDoItem::Cancelado, $cancelamento);
     }
 
     public function cancelado(): bool
@@ -75,6 +85,6 @@ final readonly class ItemDoPedido
 
     private function com(SituacaoDoItem $situacao): self
     {
-        return new self($this->id, $this->exameId, $this->codigo, $this->nome, $this->setor, $this->material, $this->precoTabelaCentavos, $this->descontoPercentual, $this->precoCentavos, $situacao);
+        return new self($this->id, $this->exameId, $this->codigo, $this->nome, $this->setor, $this->material, $this->precoTabelaCentavos, $this->descontoPercentual, $this->precoCentavos, $situacao, $this->cancelamento);
     }
 }

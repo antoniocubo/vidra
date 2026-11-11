@@ -70,7 +70,7 @@ final readonly class EloquentAmostraRepository implements AmostraRepository
 
     public function aguardandoChegada(int $limite): array
     {
-        return $this->montar(array_values(AmostraModel::query()->where('situacao', SituacaoDaAmostra::Aguardando->value)->orderBy('created_at')->orderBy('codigo')->limit($limite)->get()->all()));
+        return $this->montar(array_values(AmostraModel::query()->where('situacao', SituacaoDaAmostra::Aguardando->value)->whereIn('id', AmostraItemModel::query()->select('amostra_id'))->orderBy('created_at')->orderBy('codigo')->limit($limite)->get()->all()));
     }
 
     /**

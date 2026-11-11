@@ -26,6 +26,9 @@ final readonly class ConsultarTrabalho
             $solicitante = $this->solicitantes->resumo($p->solicitanteId);
             $amostras = $this->amostras->doPedido($p->id);
             foreach ($p->itens() as $i) {
+                if ($i->cancelado()) {
+                    continue;
+                }
                 $codigo = '';
                 $chegada = null;
                 foreach ($amostras as $a) {

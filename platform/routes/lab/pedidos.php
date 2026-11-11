@@ -12,6 +12,9 @@ Route::middleware('area:pedidos')->group(function (): void {
     Route::get('pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::get('pedidos/novo', [PedidoController::class, 'create'])->name('pedidos.create');
     Route::post('pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
+    Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->whereUuid('pedido')->name('pedidos.cancelar');
+    Route::post('pedidos/{pedido}/itens/{item}/cancelar', [PedidoController::class, 'cancelarExame'])->whereUuid(['pedido', 'item'])->name('pedidos.itens.cancelar');
+    Route::post('pedidos/{pedido}/itens', [PedidoController::class, 'incluirExame'])->whereUuid('pedido')->name('pedidos.itens.store');
     Route::get('pedidos/{pedido}', [PedidoController::class, 'show'])->whereUuid('pedido')->name('pedidos.show');
     Route::get('pedidos/{pedido}/etiquetas', [PedidoController::class, 'etiquetas'])->whereUuid('pedido')->name('pedidos.etiquetas');
 });
