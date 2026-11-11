@@ -35,15 +35,17 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: vidra
-      POSTGRES_USER: vidra
-      POSTGRES_PASSWORD: ${DB_SISTEMA_PASSWORD:?defina no platform/.env}
+      # Superusuário só para administração: a aplicação entra como vidra_app e vidra (sem superusuário).
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?defina no platform/.env}
+      VIDRA_PASSWORD: ${DB_SISTEMA_PASSWORD:?defina no platform/.env}
       VIDRA_APP_PASSWORD: ${DB_PASSWORD:?defina no platform/.env}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ../postgres/01-vidra-app.sql:/sql/01-vidra-app.sql:ro
       - ./postgres-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vidra -d vidra"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vidra"]
       interval: 10s
       retries: 6
     networks: [interna]

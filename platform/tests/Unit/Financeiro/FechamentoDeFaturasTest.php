@@ -53,7 +53,8 @@ function cenarioDeFatura(FaturaPendente ...$pendentes): object
 
 it('fecha no dia combinado e no último dia do mês quando o dia não existe', function (): void {
     expect(Calendario::fechaNoDia(15, dia('2026-12-15 10:00')))->toBeTrue()
-        ->and(Calendario::fechaNoDia(15, dia('2026-12-16 10:00')))->toBeFalse()
+        ->and(Calendario::fechaNoDia(15, dia('2026-12-16 10:00')))->toBeTrue() // recupera um dia sem agendador
+        ->and(Calendario::fechaNoDia(15, dia('2026-12-14 10:00')))->toBeFalse()
         ->and(Calendario::fechaNoDia(31, dia('2027-02-28 10:00')))->toBeTrue()
         ->and(Calendario::fechaNoDia(31, dia('2027-02-27 10:00')))->toBeFalse()
         ->and(Calendario::fechaNoDia(31, dia('2026-11-30 10:00')))->toBeTrue()

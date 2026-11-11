@@ -136,10 +136,10 @@ it('edita o vínculo: pagador, telefone crítico, laudos, colegas e onde atende'
     );
 
     actingAs($usuario)->put(route('lab.veterinarios.update', $vinculo), [
-        'telefone_critico' => '(19) 98877-1203', 'quem_paga' => 'tutor', 'recebe_laudo' => 'resumo_diario', 've_pedidos_dos_colegas' => true, 'clinica_ids' => [$amigo],
+        'telefone_critico' => '(19) 98877-1203', 'quem_paga' => 'tutor', 'recebe_laudo' => 'cada_laudo', 've_pedidos_dos_colegas' => true, 'clinica_ids' => [$amigo],
     ])->assertRedirect(route('lab.veterinarios.index', ['veterinario' => $vinculo]))->assertSessionHas('success', 'Cadastro do veterinário atualizado.');
 
-    assertDatabaseHas('laboratorio_veterinario', ['id' => $vinculo, 'telefone_critico' => '19988771203', 'quem_paga' => 'tutor', 'recebe_laudo' => 'resumo_diario', 've_pedidos_dos_colegas' => true]);
+    assertDatabaseHas('laboratorio_veterinario', ['id' => $vinculo, 'telefone_critico' => '19988771203', 'quem_paga' => 'tutor', 'recebe_laudo' => 'cada_laudo', 've_pedidos_dos_colegas' => true]);
     assertDatabaseHas('clinica_veterinario', ['vinculo_id' => $vinculo, 'clinica_id' => $amigo]);
     assertDatabaseMissing('clinica_veterinario', ['vinculo_id' => $vinculo, 'clinica_id' => $patas]);
     assertDatabaseHas('veterinarios', ['nome' => 'Beatriz Nogueira', 'email' => 'beatriz.nogueira@vetcarejardins.com.br']);

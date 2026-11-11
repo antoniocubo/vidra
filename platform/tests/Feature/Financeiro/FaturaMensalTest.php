@@ -61,12 +61,12 @@ it('fatura o veterinário que paga por conta própria no dia 1', function (): vo
     expect(DB::table('faturas')->first())->toMatchObject(['pagador_tipo' => 'solicitante', 'pagador_id' => $this->c['vinculo'], 'vencimento' => '2026-12-10']);
 });
 
-it('não fatura pedido do tutor, cancelado, sem laudo ou de outra competência', function (): void {
+it('não fatura pedido do tutor, cancelado, sem laudo ou liberado depois da competência', function (): void {
     CenarioDeFatura::pedido($this->lab, $this->c, 1);
     CenarioDeFatura::pedido($this->lab, $this->c, 2, pagador: 'responsavel');
     CenarioDeFatura::pedido($this->lab, $this->c, 3, precos: [5000], cancelados: ['Exame 1']);
     CenarioDeFatura::pedido($this->lab, $this->c, 4, liberadoEm: null);
-    CenarioDeFatura::pedido($this->lab, $this->c, 5, liberadoEm: '2026-10-20 15:00:00');
+    CenarioDeFatura::pedido($this->lab, $this->c, 5, liberadoEm: '2026-12-02 15:00:00'); // depois da competência
 
     fecharNoDia('2026-12-05');
 
@@ -223,4 +223,21 @@ it('um laboratório não vê a fatura do outro e o comando roda cada um no seu c
     app(ContextoLaboratorio::class)->executarComo($this->lab, fn () => expect(FaturaModel::query()->pluck('pagador_nome')->all())->toBe(['Clínica Patas']));
     $this->actingAs($adminBeta)->withSession(['laboratorio_id' => $outro])->get(route('lab.financeiro.index', ['competencia' => '2026-11', 'fatura' => DB::table('faturas')->where('laboratorio_id', $this->lab)->value('id')]))
         ->assertInertia(fn (Assert $p) => $p->where('pagadores.0.pagador', 'Clínica Beta')->has('pagadores', 1)->where('fatura', null));
+});
+
+it('recupera o fechamento quando o agendador falhou no dia', function (): void {
+    CenarioDeFatura::pedido($this->lab, $this->c, 1);
+
+    fecharNoDia('2026-12-07');
+
+    expect(DB::table('faturas')->value('competencia'))->toBe('2026-11');
+});
+
+it('pedido de mês anterior que ficou sem fatura entra na próxima', function (): void {
+    CenarioDeFatura::pedido($this->lab, $this->c, 1, liberadoEm: '2026-10-20 15:00:00');
+    CenarioDeFatura::pedido($this->lab, $this->c, 2);
+
+    fecharNoDia('2026-12-05');
+
+    expect(DB::table('linhas_fatura')->orderBy('protocolo')->pluck('protocolo')->all())->toBe(['P-00001', 'P-00002']);
 });

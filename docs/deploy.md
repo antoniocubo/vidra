@@ -143,6 +143,7 @@ select c.relname, c.relrowsecurity, c.relforcerowsecurity
 Esperado:
 
 - `vidra_app`: `rolsuper = f` e `rolbypassrls = f`.
+- `vidra` (dono das tabelas e conexão de sistema): `rolsuper = f` e `rolbypassrls = t`. Superusuário só o `postgres`, cuja senha (`POSTGRES_SUPERUSER_PASSWORD`) a aplicação não usa: uma injeção de SQL numa consulta de sistema não pode virar acesso ao servidor.
 - A segunda consulta devolve **zero linhas** (o `vidra_app` não é dono de nenhuma tabela; dono ignora RLS sem `FORCE`).
 - A terceira devolve **zero linhas** (toda tabela com `laboratorio_id` tem RLS ligado e forçado).
 - `platform/.env` usa `DB_USERNAME=vidra_app`. Se aparecer `vidra` ali, o isolamento entre laboratórios está desligado.

@@ -78,7 +78,7 @@ it('reaproveita o veterinário de outro laboratório e isola os vínculos', func
     });
     actingAs(Laboratorios::usuarioEm($beta))->post(route('lab.veterinarios.store'), payload([
         'nome' => 'Outro Nome', 'email' => 'outro@exemplo.com', 'telefone_critico' => '11988887777',
-        'quem_paga' => 'tutor', 'recebe_laudo' => 'resumo_diario', 've_pedidos_dos_colegas' => true,
+        'quem_paga' => 'tutor', 'recebe_laudo' => 'cada_laudo', 've_pedidos_dos_colegas' => true,
     ]))->assertSessionHasNoErrors()->assertSessionHas('success', 'Dra. Beatriz Nogueira já estava no Vidra e agora faz parte do seu laboratório.');
     $this->assertDatabaseCount('veterinarios', 1);
     $this->assertDatabaseCount('laboratorio_veterinario', 2);
@@ -91,7 +91,7 @@ it('reaproveita o veterinário de outro laboratório e isola os vínculos', func
                 ->and($vinculos->first()->telefone_critico)->toBe($telefone);
         });
     }
-    assertDatabaseHas('laboratorio_veterinario', ['laboratorio_id' => $beta, 'quem_paga' => 'tutor', 'recebe_laudo' => 'resumo_diario', 've_pedidos_dos_colegas' => true]);
+    assertDatabaseHas('laboratorio_veterinario', ['laboratorio_id' => $beta, 'quem_paga' => 'tutor', 'recebe_laudo' => 'cada_laudo', 've_pedidos_dos_colegas' => true]);
 });
 
 it('valida as preferências do vínculo', function (string $campo, mixed $valor): void {

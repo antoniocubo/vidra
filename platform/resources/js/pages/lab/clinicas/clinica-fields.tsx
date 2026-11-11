@@ -32,7 +32,7 @@ export const CLINICA_VAZIA: ClinicaData = {
     responsavel: '',
     observacao_coleta: '',
     desconto: '0',
-    dia_fechamento: '31',
+    dia_fechamento: '1',
     dia_vencimento: '10',
     forma_pagamento: 'pix',
 };
@@ -139,7 +139,7 @@ export function ClinicaFields({ data, setData, errors, formasDePagamento }: Prop
                         options={formasDePagamento.map((f) => ({ value: f, label: ROTULO_FORMA[f] ?? f }))}
                     />
                 </FormField>
-                <FormField id="dia_fechamento" label="Fechamento da fatura" error={errors.dia_fechamento}>
+                <FormField id="dia_fechamento" label="Dia de fechar a fatura do mês anterior" error={errors.dia_fechamento}>
                     <Select value={data.dia_fechamento} onChange={(value) => setData('dia_fechamento', value)} options={DIAS_DE_FECHAMENTO} />
                 </FormField>
                 <FormField id="dia_vencimento" label="Vencimento" error={errors.dia_vencimento}>

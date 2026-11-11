@@ -28,7 +28,7 @@ final readonly class PedidosFaturaveisEloquent implements PedidosFaturaveis
         $lab = $this->atual->id();
         $pedidos = DB::table('laudos')->join('pedidos', 'pedidos.id', '=', 'laudos.pedido_id')
             ->where('laudos.laboratorio_id', $lab)
-            ->where('laudos.liberado_em', '>=', $competencia->inicio()->format('Y-m-d H:i:s'))
+            // Sem limite inferior: pedido de mês anterior que ficou sem fatura entra na próxima.
             ->where('laudos.liberado_em', '<', $competencia->fim()->format('Y-m-d H:i:s'))
             ->whereIn('pedidos.pagador_tipo', ['clinica', 'solicitante'])
             ->whereNotIn('pedidos.id', DB::table('linhas_fatura')->where('laboratorio_id', $lab)->select('pedido_id'))

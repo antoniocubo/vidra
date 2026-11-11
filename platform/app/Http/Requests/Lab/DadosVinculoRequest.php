@@ -13,7 +13,7 @@ trait DadosVinculoRequest
         return [
             'telefone_critico' => ['required', 'string', 'max:20'],
             'quem_paga' => ['required', 'in:clinica,veterinario,tutor'],
-            'recebe_laudo' => ['required', 'in:cada_laudo,resumo_diario'],
+            'recebe_laudo' => ['required', 'in:cada_laudo'],
             've_pedidos_dos_colegas' => ['required', 'boolean'],
             'clinica_ids' => ['nullable', 'array'],
             'clinica_ids.*' => ['uuid', 'distinct'],

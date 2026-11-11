@@ -55,3 +55,10 @@ it('tem em português todas as chaves do validation.php padrão do Laravel', fun
         }
     }
 });
+
+it('não aceita o resumo do dia, que ainda não existe', function (): void {
+    $lab = Laboratorios::criar();
+    $this->actingAs(Laboratorios::usuarioEm($lab))->withSession(['laboratorio_id' => $lab])
+        ->post(route('lab.veterinarios.store'), ['recebe_laudo' => 'resumo_diario'])
+        ->assertSessionHasErrors('recebe_laudo');
+});

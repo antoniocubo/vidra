@@ -110,8 +110,8 @@ export function PagamentoELaudosSections({
                         value={data.recebe_laudo}
                         onChange={(value) => setData('recebe_laudo', value)}
                         options={[
+                            // O resumo do dia volta quando existir: até lá, cada laudo sai na hora.
                             { value: 'cada_laudo', label: 'Um e-mail com o PDF a cada laudo liberado' },
-                            { value: 'resumo_diario', label: 'Um resumo do dia, às 18h, com todos os laudos liberados' },
                         ]}
                     />
                     {errors.recebe_laudo && <Alert tone="crit" title={errors.recebe_laudo} />}

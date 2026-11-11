@@ -12,11 +12,12 @@ final class Calendario
 {
     private const string FUSO = 'America/Sao_Paulo';
 
+    /** No dia ou depois dele: se o agendador falhou no dia, o dia seguinte recupera (fechar é idempotente). */
     public static function fechaNoDia(int $diaDeFechamento, DateTimeImmutable $hoje): bool
     {
         $local = $hoje->setTimezone(new DateTimeZone(self::FUSO));
 
-        return (int) $local->format('j') === min($diaDeFechamento, (int) $local->format('t'));
+        return (int) $local->format('j') >= min($diaDeFechamento, (int) $local->format('t'));
     }
 
     /** O vencimento cai no mês do fechamento; se o dia já passou ou é o mesmo do fechamento, vai para o mês seguinte. */
