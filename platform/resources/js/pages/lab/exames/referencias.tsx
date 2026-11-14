@@ -1,4 +1,4 @@
-import { Alert, Button, EmptyState, FormField, PageHeader, Select, TextInput, Toast, useFlashToast } from '@/components/vidra';
+import { Alert, Button, EmptyState, FormField, PageHeader, Select, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ListChecks } from 'lucide-react';
@@ -103,7 +103,7 @@ function Tabela({ exameId, analito, perfis }: { exameId: string; analito: Analit
 export default function Referencias({ exame, perfis }: Props) {
     const [id, setId] = useState(exame.analitos[0]?.id ?? '');
     const analito = exame.analitos.find((a) => a.id === id);
-    const flash = useFlashToast();
+    useFlashToast();
     return (
         <AppLayout
             breadcrumbs={[
@@ -130,7 +130,6 @@ export default function Referencias({ exame, perfis }: Props) {
                     <Link href={route('lab.exames.index', { exame: exame.id })}>Voltar ao exame</Link>
                 </Button>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4" />}
         </AppLayout>
     );
 }

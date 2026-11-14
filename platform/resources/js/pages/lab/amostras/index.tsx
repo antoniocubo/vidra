@@ -11,7 +11,6 @@ import {
     ScanField,
     StatusBadge,
     TextInput,
-    Toast,
     useFlashToast,
     type Tone,
 } from '@/components/vidra';
@@ -168,7 +167,6 @@ export default function Amostras({ recebidas, aguardando, selecionada }: Props) 
                     )}
                 </div>
             </div>
-            {flash.message && !erro && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

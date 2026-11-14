@@ -10,7 +10,6 @@ import {
     TabPanel,
     Tabs,
     TextInput,
-    Toast,
     useFlashToast,
 } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
@@ -262,7 +261,7 @@ function Editor({ selecionado }: { selecionado: Selecionado }) {
     );
 }
 export default function Bancada({ mapa, setores, setor, selecionado }: Props) {
-    const flash = useFlashToast();
+    useFlashToast();
     return (
         <AppLayout breadcrumbs={[{ title: 'Bancada', href: route('lab.bancada.index') }]}>
             <Head title="Bancada" />
@@ -319,7 +318,6 @@ export default function Bancada({ mapa, setores, setor, selecionado }: Props) {
                     </div>
                 </TabPanel>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

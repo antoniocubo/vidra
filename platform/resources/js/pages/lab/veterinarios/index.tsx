@@ -1,4 +1,4 @@
-import { Button, Card, DetailList, EmptyState, FormField, PageHeader, TextInput, Toast, useFlashToast } from '@/components/vidra';
+import { Button, Card, DetailList, EmptyState, FormField, PageHeader, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { Stethoscope } from 'lucide-react';
@@ -24,7 +24,7 @@ type Props = { veterinarios: Veterinario[]; selecionado: Veterinario | null; bus
 export default function Veterinarios({ veterinarios, selecionado, busca }: Props) {
     const [termo, setTermo] = useState(busca);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const flash = useFlashToast();
+    useFlashToast();
     useEffect(
         () => () => {
             if (timer.current) clearTimeout(timer.current);
@@ -150,7 +150,6 @@ export default function Veterinarios({ veterinarios, selecionado, busca }: Props
                     )}
                 </div>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

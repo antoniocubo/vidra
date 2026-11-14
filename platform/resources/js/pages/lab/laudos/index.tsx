@@ -1,4 +1,4 @@
-import { Button, DataTable, EmptyState, FormField, PageHeader, Select, StatusBadge, TextInput, Toast, useFlashToast } from '@/components/vidra';
+import { Button, DataTable, EmptyState, FormField, PageHeader, Select, StatusBadge, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -35,7 +35,7 @@ const entregas = [
 export default function Laudos({ laudos, filtros, pagina, temProxima }: Props) {
     const areas = usePage<SharedData>().props.laboratorio?.areas ?? [];
     const podeAbrirPedidos = areas.includes('pedidos');
-    const flash = useFlashToast();
+    useFlashToast();
     const [busca, setBusca] = useState(filtros.busca);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => setBusca(filtros.busca), [filtros.busca]);
@@ -181,7 +181,6 @@ export default function Laudos({ laudos, filtros, pagina, temProxima }: Props) {
                     </Button>
                 </nav>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

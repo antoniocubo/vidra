@@ -11,7 +11,6 @@ import {
     Select,
     StatusBadge,
     TextInput,
-    Toast,
     useFlashToast,
     type Tone,
 } from '@/components/vidra';
@@ -76,7 +75,7 @@ const pedidos = (n: number) => `${n} ${n === 1 ? 'pedido' : 'pedidos'}`;
 
 export default function Financeiro({ competencia, competencias, resumo, pagadores, fatura }: Props) {
     const { errors } = usePage<SharedData>().props;
-    const flash = useFlashToast();
+    useFlashToast();
     const [fechando, setFechando] = useState(false);
     const [recebendo, setRecebendo] = useState(false);
     const [creditando, setCreditando] = useState(false);
@@ -345,7 +344,6 @@ export default function Financeiro({ competencia, competencias, resumo, pagadore
                     </ConfirmDialog>
                 </>
             )}
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

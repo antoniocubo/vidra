@@ -9,7 +9,6 @@ import {
     PageHeader,
     StatusBadge,
     TextInput,
-    Toast,
     useFlashToast,
 } from '@/components/vidra';
 import { AnimalCard } from '@/components/vidra/pet';
@@ -34,7 +33,7 @@ export default function Tutores({ tutores, selecionado, busca }: Props) {
     const [confirmar, setConfirmar] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const flash = useFlashToast();
+    useFlashToast();
     const { errors } = usePage().props;
     useEffect(
         () => () => {
@@ -209,7 +208,6 @@ export default function Tutores({ tutores, selecionado, busca }: Props) {
                 onConfirm={retirar}
                 loading={salvando}
             />
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

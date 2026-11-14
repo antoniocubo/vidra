@@ -1,15 +1,4 @@
-import {
-    Button,
-    Checkbox,
-    ChipToggleGroup,
-    EmptyState,
-    FormField,
-    PageHeader,
-    StatusBadge,
-    TextInput,
-    Toast,
-    useFlashToast,
-} from '@/components/vidra';
+import { Button, Checkbox, ChipToggleGroup, EmptyState, FormField, PageHeader, StatusBadge, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { FlaskConical } from 'lucide-react';
@@ -42,7 +31,7 @@ const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um :
 
 export default function Catalogo({ exames, detalhe, filtros }: Props) {
     const [busca, setBusca] = useState(filtros.busca);
-    const flash = useFlashToast();
+    useFlashToast();
     function filtrar(patch: Partial<Props['filtros']>) {
         const f = { ...filtros, busca, ...patch };
         router.get(route('lab.exames.index'), { ...f, inativos: f.inativos ? 1 : 0 }, { preserveState: true, preserveScroll: true });
@@ -254,7 +243,6 @@ export default function Catalogo({ exames, detalhe, filtros }: Props) {
                     )}
                 </div>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4" />}
         </AppLayout>
     );
 }

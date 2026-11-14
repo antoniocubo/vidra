@@ -8,7 +8,6 @@ import {
     ProgressBar,
     SegmentedControl,
     StatusBadge,
-    Toast,
     useFlashToast,
     type Tone,
 } from '@/components/vidra';
@@ -63,7 +62,7 @@ const extras: Record<string, string[]> = {
 export default function Assinatura(props: Props) {
     const { plano, situacao, situacaoRotulo, diasRestantes, validaAte, consumo, cobrancas, linkPendente, planos } = props;
     const { errors } = usePage<SharedData>().props;
-    const flash = useFlashToast();
+    useFlashToast();
     const [cobranca, setCobranca] = useState<Cobranca>(props.cobranca);
     const [escolhido, setEscolhido] = useState<Plano | null>(null);
     const [ocupado, setOcupado] = useState(false);
@@ -273,7 +272,6 @@ export default function Assinatura(props: Props) {
                 loading={ocupado}
                 onConfirm={assinar}
             />
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

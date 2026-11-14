@@ -1,15 +1,4 @@
-import {
-    Button,
-    ChipToggleGroup,
-    DataTable,
-    EmptyState,
-    FormField,
-    PageHeader,
-    StatusBadge,
-    TextInput,
-    Toast,
-    useFlashToast,
-} from '@/components/vidra';
+import { Button, ChipToggleGroup, DataTable, EmptyState, FormField, PageHeader, StatusBadge, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { ClipboardList, Search } from 'lucide-react';
@@ -34,7 +23,7 @@ type Props = { pedidos: Pedido[]; filtros: Filtros; situacoes: { value: string; 
 export default function Pedidos({ pedidos, filtros, situacoes }: Props) {
     const [busca, setBusca] = useState(filtros.busca);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const flash = useFlashToast();
+    useFlashToast();
     useEffect(
         () => () => {
             if (timer.current) clearTimeout(timer.current);
@@ -145,7 +134,6 @@ export default function Pedidos({ pedidos, filtros, situacoes }: Props) {
                     }
                 />
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

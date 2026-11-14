@@ -9,7 +9,6 @@ import {
     PageHeader,
     StatusBadge,
     TextInput,
-    Toast,
     useFlashToast,
 } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
@@ -48,7 +47,7 @@ export default function Clinicas({ clinicas, selecionado, filtros }: Props) {
     const [confirmar, setConfirmar] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const flash = useFlashToast();
+    useFlashToast();
     useEffect(
         () => () => {
             if (timer.current) clearTimeout(timer.current);
@@ -259,7 +258,6 @@ export default function Clinicas({ clinicas, selecionado, filtros }: Props) {
                 loading={salvando}
                 onConfirm={desativar}
             />
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }

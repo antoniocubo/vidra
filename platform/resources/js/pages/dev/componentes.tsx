@@ -31,7 +31,6 @@ import {
     TabPanel,
     Tabs,
     TextInput,
-    Toast,
     type Column,
     type LabOption,
     type ResultRowData,
@@ -42,6 +41,7 @@ import { AnimalCard, SampleLabel } from '@/components/vidra/pet';
 import { Head } from '@inertiajs/react';
 import { Inbox, MoreHorizontal, Plus, Printer, Search, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { toast } from 'react-toastify';
 
 /*
  * Vitrine do design system. Só existe em local e testing (routes/dev.php).
@@ -300,7 +300,10 @@ export default function VitrineDeComponentes() {
                         <Alert tone="ok" title="Laudo do Thor liberado e assinado." />
                     </div>
                     <div className="flex flex-wrap items-start gap-8">
-                        <Toast message="Veterinário cadastrado." actionLabel="Desfazer" onAction={() => undefined} onDismiss={() => undefined} />
+                        {/* Avisos passageiros: react-toastify (useFlashToast lê flash.success do back). */}
+                        <Button variant="secondary" onClick={() => toast.success('Veterinário cadastrado.')}>
+                            Mostrar aviso
+                        </Button>
                         <EmptyState
                             icon={Inbox}
                             title="Nenhum pedido aguardando liberação"

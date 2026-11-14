@@ -135,7 +135,7 @@ O cadastro de veterinário é o exemplo de referência de ponta a ponta. Copie o
 - **Design system em `resources/js/components/vidra`**, importado de `@/components/vidra` (e `@/components/vidra/pet` para a linha Pet). Use estes antes de criar algo novo; os de `components/ui` (shadcn) são base interna.
   - Ações: `Button` (primary, secondary, ghost, danger; sm, md, lg; `loading`, `asChild`), `IconButton` (exige `label`).
   - Formulário: `FormField` + `TextInput` (`mono`, `icon`, `suffix`), `Select`, `Checkbox`, `Switch`, `RadioCardGroup`, `ChipToggleGroup`, `SegmentedControl`, `ScanField` (leitor de código de barras), `FormSection`, `FormActions`.
-  - Status: `StatusBadge` (`tone`: ok, warn, crit, info, neutral), `ProductBadge`, `AiBadge`, `CountPill`, `Alert`, `Toast` + `useFlashToast` (lê `flash.success`), `EmptyState`.
+  - Status: `StatusBadge` (`tone`: ok, warn, crit, info, neutral), `ProductBadge`, `AiBadge`, `CountPill`, `Alert`, `useFlashToast` (lê `flash.success` e mostra com o **react-toastify**; o `ToastContainer` fica em `app.tsx`; para um aviso fora do flash, `toast.success()` direto), `EmptyState`.
   - Dados: `MetricCard`, `DataTable`, `ResultTable` (alto, baixo, crítico, valor anterior), `DetailList`, `ProgressBar`.
   - Estrutura: `PageHeader`, `Card`, `Tabs` + `TabPanel`, `StatusStepper`, `ConfirmDialog`, `LabSwitcher`, `InitialsAvatar`, `LabMark`, `PersonRow`.
   - Pet: `AnimalCard`, `SampleLabel`.

@@ -216,3 +216,12 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Avisos (react-toastify) com os tokens da Vidra: fundo escuro da tinta, ícone verde claro. */
+:root {
+    --toastify-color-dark: var(--foreground);
+    --toastify-text-color-dark: var(--background);
+    --toastify-color-success: var(--vidra-ok-100);
+    --toastify-font-family: var(--font-sans);
+    --toastify-toast-bd-radius: var(--radius-lg);
+}

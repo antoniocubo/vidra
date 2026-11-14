@@ -1,49 +1,12 @@
-import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
-import { Check, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { IconButton } from './button';
+import { useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
 
-export type ToastProps = {
-    message: string;
-    actionLabel?: string;
-    onAction?: () => void;
-    onDismiss?: () => void;
-    className?: string;
-};
+/** Ação opcional dentro do aviso (ex.: "Imprimir etiquetas"). */
+export type AcaoDoAviso = { label: string; onClick: () => void };
 
-/** Confirmação passageira. Só apresentação: a fila e o tempo ficam com quem usa. */
-export function Toast({ message, actionLabel, onAction, onDismiss, className }: ToastProps) {
-    return (
-        <div
-            role="status"
-            className={cn('bg-foreground text-background flex items-center gap-3 rounded-lg py-2 pr-2 pl-4 text-sm shadow-lg', className)}
-        >
-            <Check aria-hidden="true" className="size-[18px] shrink-0" />
-            <span className="min-w-0 flex-1">{message}</span>
-            {actionLabel && (
-                <button
-                    type="button"
-                    onClick={onAction}
-                    className="bg-background/15 hover:bg-background/25 focus-visible:outline-brand-500 h-11 shrink-0 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
-                >
-                    {actionLabel}
-                </button>
-            )}
-            {onDismiss && (
-                <IconButton
-                    icon={X}
-                    label="Fechar aviso"
-                    variant="ghost"
-                    onClick={onDismiss}
-                    className="text-background hover:bg-background/15 hover:text-background"
-                />
-            )}
-        </div>
-    );
-}
-
-const FLASH_DURATION_MS = 5000;
+// Props já avisadas: o StrictMode roda o efeito duas vezes com o mesmo objeto.
+const avisadas = new WeakSet<object>();
 
 function readFlashSuccess(props: unknown): string | null {
     if (typeof props !== 'object' || props === null || !('flash' in props)) return null;
@@ -53,22 +16,37 @@ function readFlashSuccess(props: unknown): string | null {
 }
 
 /**
- * Lê `flash.success` das props do Inertia e some sozinho após 5s.
- * Reaparece a cada nova resposta, mesmo com o mesmo texto (ex.: dois cadastros seguidos).
- * `message` é null quando não há aviso a mostrar.
+ * Mostra `flash.success` num aviso do react-toastify (o ToastContainer fica em app.tsx).
+ * Reaparece a cada nova resposta, mesmo com o mesmo texto. Devolve a mensagem para quem
+ * também quer usá-la na tela (ex.: o campo do leitor de amostras).
  */
-export function useFlashToast(): { message: string | null; dismiss: () => void } {
+export function useFlashToast(acao?: AcaoDoAviso): { message: string | null } {
     const { props } = usePage();
-    const incoming = readFlashSuccess(props);
-    const [message, setMessage] = useState<string | null>(incoming);
+    const message = readFlashSuccess(props);
+    const acaoAtual = useRef(acao);
+    acaoAtual.current = acao;
 
     useEffect(() => {
-        setMessage(incoming);
-        if (incoming === null) return;
+        if (message === null || avisadas.has(props)) return;
+        avisadas.add(props);
+        const extra = acaoAtual.current;
+        toast.success(
+            extra ? (
+                <span className="flex flex-wrap items-center gap-3">
+                    <span>{message}</span>
+                    <button
+                        type="button"
+                        onClick={extra.onClick}
+                        className="bg-background/15 hover:bg-background/25 focus-visible:outline-brand-500 h-11 rounded-md px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                        {extra.label}
+                    </button>
+                </span>
+            ) : (
+                message
+            ),
+        );
+    }, [props, message]);
 
-        const timer = window.setTimeout(() => setMessage(null), FLASH_DURATION_MS);
-        return () => window.clearTimeout(timer);
-    }, [props, incoming]);
-
-    return { message, dismiss: () => setMessage(null) };
+    return { message };
 }

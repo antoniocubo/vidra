@@ -12,7 +12,6 @@ import {
     TabPanel,
     Tabs,
     TextInput,
-    Toast,
     useFlashToast,
 } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
@@ -84,7 +83,6 @@ const SITUACAO_AMOSTRA: Record<string, { rotulo: string; tom: 'ok' | 'warn' | 'c
 
 export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaAmostra, historico }: Props) {
     const [aba, setAba] = useState<'detalhes' | 'historico'>('detalhes');
-    const flash = useFlashToast();
     const { laboratorio } = usePage<SharedData>().props;
     const [retificar, setRetificar] = useState(false);
     const retificacao = useForm({ motivo: '' });
@@ -110,6 +108,7 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
         cancelamento.post(url, { preserveScroll: true, onSuccess: () => setCancelar(null) });
     };
     const etiquetas = route('lab.pedidos.etiquetas', { pedido: pedido.id });
+    useFlashToast(novaAmostra ? { label: 'Imprimir etiquetas', onClick: () => window.open(etiquetas, '_blank', 'noopener') } : undefined);
 
     // Depois de salvar, tenta abrir as etiquetas numa aba nova; se o navegador bloquear, o botão está logo abaixo.
     useEffect(() => {
@@ -478,15 +477,6 @@ export default function Pedido({ pedido, imprimir, laudo, entrega, exames, novaA
                 </FormField>
                 {errosCancelamento.form && <Alert tone="crit" title={errosCancelamento.form} />}
             </ConfirmDialog>
-            {flash.message && (
-                <Toast
-                    actionLabel={novaAmostra ? 'Imprimir etiquetas' : undefined}
-                    onAction={() => window.open(etiquetas, '_blank', 'noopener')}
-                    message={flash.message}
-                    onDismiss={flash.dismiss}
-                    className="fixed right-4 bottom-4 z-50"
-                />
-            )}
         </AppLayout>
     );
 }

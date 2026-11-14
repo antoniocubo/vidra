@@ -10,7 +10,6 @@ import {
     Select,
     StatusBadge,
     TextInput,
-    Toast,
     useFlashToast,
 } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
@@ -40,7 +39,7 @@ export default function Equipe({
     mudancas: { id: string; em: string; quem: string; detalhe: string }[];
 }) {
     const { auth, errors } = usePage<SharedData>().props;
-    const flash = useFlashToast();
+    useFlashToast();
     const [convidando, setConvidando] = useState(false);
     const [removendo, setRemovendo] = useState<Membro | null>(null);
     const [cancelando, setCancelando] = useState<Convite | null>(null);
@@ -282,7 +281,6 @@ export default function Equipe({
                     if (cancelando) excluir(route('lab.equipe.cancelar', { convite: cancelando.id }));
                 }}
             />
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} />}
         </AppLayout>
     );
 }

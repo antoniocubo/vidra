@@ -1,16 +1,4 @@
-import {
-    Alert,
-    Button,
-    Card,
-    ConfirmDialog,
-    EmptyState,
-    FormField,
-    PageHeader,
-    StatusBadge,
-    TextInput,
-    Toast,
-    useFlashToast,
-} from '@/components/vidra';
+import { Alert, Button, Card, ConfirmDialog, EmptyState, FormField, PageHeader, StatusBadge, TextInput, useFlashToast } from '@/components/vidra';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FileCheck } from 'lucide-react';
@@ -247,7 +235,7 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
 
 export default function Liberacao({ fila, selecionado, eRt }: Props) {
-    const flash = useFlashToast();
+    useFlashToast();
     return (
         <AppLayout breadcrumbs={[{ title: 'Liberação', href: route('lab.liberacao.index') }]}>
             <Head title="Liberação" />
@@ -307,7 +295,6 @@ export default function Liberacao({ fila, selecionado, eRt }: Props) {
                     </div>
                 </div>
             </div>
-            {flash.message && <Toast message={flash.message} onDismiss={flash.dismiss} className="fixed right-4 bottom-4 z-50" />}
         </AppLayout>
     );
 }
