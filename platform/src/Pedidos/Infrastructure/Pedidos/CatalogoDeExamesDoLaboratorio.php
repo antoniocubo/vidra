@@ -25,12 +25,18 @@ final readonly class CatalogoDeExamesDoLaboratorio implements CatalogoDeExames
             return null;
         }
 
-        return $exame->ativo ? $this->converter($exame) : null;
+        return self::pedivel($exame) ? $this->converter($exame) : null;
     }
 
     public function buscar(string $termo, int $limite): array
     {
-        return array_slice(array_map($this->converter(...), ($this->listar)($termo)), 0, $limite);
+        return array_slice(array_map($this->converter(...), array_values(array_filter(($this->listar)($termo), self::pedivel(...)))), 0, $limite);
+    }
+
+    /** Exame sem parâmetros não tem onde receber resultado: o pedido ficaria preso para sempre. */
+    private static function pedivel(ExameDto $exame): bool
+    {
+        return $exame->ativo && $exame->contagemAnalitos > 0;
     }
 
     private function converter(ExameDto $exame): ExameDoPedido

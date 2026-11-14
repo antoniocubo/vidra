@@ -15,6 +15,7 @@ final readonly class FilaDeLiberacao
      * @return list<PedidoParaConferencia> */
     public function __invoke(): array
     {
-        return array_values(array_filter($this->conferencia->pedidos(), fn (PedidoParaConferencia $p): bool => $p->pronto()));
+        // Incompletos também entram: o RT vê o que falta em vez de o pedido sumir.
+        return array_values(array_filter($this->conferencia->pedidos(), fn (PedidoParaConferencia $p): bool => $p->emConferencia()));
     }
 }

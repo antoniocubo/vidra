@@ -23,6 +23,7 @@ beforeEach(function (): void {
     $this->novoExame = function (string $material = ' soro '): string {
         $id = (string) Str::uuid7();
         DB::table('exames')->insert(['id' => $id, 'laboratorio_id' => $this->lab, 'codigo' => 'NOVO', 'nome' => 'Novo exame', 'setor' => 'bioquimica', 'material' => $material, 'prazo_horas' => 24, 'preco_centavos' => 1005, 'ativo' => true, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('analitos')->insert(['id' => (string) Str::uuid7(), 'laboratorio_id' => $this->lab, 'exame_id' => $id, 'nome' => 'Glicose', 'unidade' => 'mg/dL', 'casas_decimais' => 0, 'ordem' => 0, 'created_at' => now(), 'updated_at' => now()]);
 
         return $id;
     };
@@ -150,3 +151,12 @@ it('bancada recebe 403 nas três alterações de pedido', function (string $acao
     };
     $this->post($url, ['motivo' => 'Dispensado', 'exame_id' => $this->c['bioquimico']])->assertForbidden();
 })->with(['pedido', 'exame', 'incluir']);
+
+it('não inclui nem oferece na busca um exame sem parâmetros, que nunca teria resultado', function (): void {
+    $vazio = (string) Str::uuid7();
+    DB::table('exames')->insert(['id' => $vazio, 'laboratorio_id' => $this->lab, 'codigo' => 'VAZIO', 'nome' => 'Exame sem parâmetros', 'setor' => 'bioquimica', 'material' => 'Soro', 'prazo_horas' => 24, 'preco_centavos' => 1000, 'ativo' => true, 'created_at' => now(), 'updated_at' => now()]);
+
+    $this->post($this->incluirUrl, ['exame_id' => $vazio])->assertSessionHasErrors();
+    $this->get(route('lab.pedidos.create', ['busca_exame' => 'sem parâmetros']))->assertInertia(fn ($p) => $p->where('exames', []));
+    $this->assertDatabaseMissing('pedido_itens', ['exame_id' => $vazio]);
+});

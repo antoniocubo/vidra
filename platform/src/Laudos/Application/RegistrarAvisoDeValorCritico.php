@@ -25,7 +25,9 @@ final readonly class RegistrarAvisoDeValorCritico
             if (! $this->rt->ehRt($input->por)) {
                 throw ErroDeLiberacao::com('Só o responsável técnico registra o aviso do valor crítico.');
             }
-            if (! $p->pronto() || $this->laudos->doPedido($p->id) !== null) {
+            // Crítico se avisa assim que o resultado existe, mesmo faltando outro exame; e também na retificação.
+            $laudo = $this->laudos->doPedido($p->id);
+            if (! $p->emConferencia() || ($laudo !== null && ! $laudo->emRetificacao())) {
                 throw ErroDeLiberacao::com('O pedido precisa estar aguardando liberação.');
             }
             foreach ($p->resultados as $r) {

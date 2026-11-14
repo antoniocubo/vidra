@@ -49,7 +49,7 @@ final readonly class ConferenciaDosPedidos implements Conferencia
                 $anteriorValor = $a === null ? null : ($a->valor ?? $a->texto);
                 $linhas[] = new ResultadoParaConferencia($r->id, $r->itemId, $exames[$r->itemId], $r->nome, $valor, $r->unidade, $r->classificacao, $r->referencia, $r->digitadorNome, $r->digitadoEm, $anteriorValor, $a?->liberadoEm, $mudanca['alerta'], $mudanca['percentual'], $avisos[$r->id] ?? null);
             }
-            $pedidos[] = new PedidoParaConferencia($id, $primeiro->laboratorioId, $primeiro->protocolo, $primeiro->paciente, $primeiro->solicitante, $primeiro->telefoneCritico, $estados, $linhas);
+            $pedidos[] = new PedidoParaConferencia($id, $primeiro->laboratorioId, $primeiro->protocolo, $primeiro->paciente, $primeiro->solicitante, $primeiro->telefoneCritico, $estados, $linhas, $exames);
         }
         usort($pedidos, fn ($a, $b): int => strcmp($a->protocolo, $b->protocolo));
 

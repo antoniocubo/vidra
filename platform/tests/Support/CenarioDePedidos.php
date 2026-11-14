@@ -42,7 +42,15 @@ final class CenarioDePedidos
                 'prazo_horas' => 24, 'preco_centavos' => $preco, 'ativo' => true, 'created_at' => $agora, 'updated_at' => $agora,
             ]);
         }
+        // Exame sem parâmetro não entra em pedido: cada um ganha o seu.
+        $analitos = ['bioquimico' => (string) Str::uuid7(), 'hemograma' => (string) Str::uuid7()];
+        foreach ([['bioquimico', 'Potássio', 'mEq/L'], ['hemograma', 'Hemácias', 'x10⁶/µL']] as [$chave, $nome, $unidade]) {
+            $db->table('analitos')->insert([
+                'id' => $analitos[$chave], 'laboratorio_id' => $laboratorio, 'exame_id' => $ids[$chave], 'nome' => $nome, 'unidade' => $unidade,
+                'casas_decimais' => 2, 'ordem' => 0, 'created_at' => $agora, 'updated_at' => $agora,
+            ]);
+        }
 
-        return ['animal' => $ids['animal'], 'tutor' => $ids['tutor'], 'vinculo' => $ids['vinculo'], 'clinica' => $ids['clinica'], 'bioquimico' => $ids['bioquimico'], 'hemograma' => $ids['hemograma']];
+        return ['animal' => $ids['animal'], 'tutor' => $ids['tutor'], 'vinculo' => $ids['vinculo'], 'clinica' => $ids['clinica'], 'bioquimico' => $ids['bioquimico'], 'hemograma' => $ids['hemograma'], 'analito_bioquimico' => $analitos['bioquimico'], 'analito_hemograma' => $analitos['hemograma']];
     }
 }

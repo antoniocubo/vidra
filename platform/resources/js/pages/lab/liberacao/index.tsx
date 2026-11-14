@@ -31,11 +31,21 @@ type Pedido = {
     itens: Record<string, string>;
     resultados: Resultado[];
     pronto: boolean;
+    faltando: string[];
     retificacao: string | null;
     proximaVersao: number;
 };
 type Props = {
-    fila: { id: string; protocolo: string; paciente: string; solicitante: string; criticos: number; alterados: number; retificacao: string | null }[];
+    fila: {
+        id: string;
+        protocolo: string;
+        paciente: string;
+        solicitante: string;
+        faltando: string[];
+        criticos: number;
+        alterados: number;
+        retificacao: string | null;
+    }[];
     selecionado: Pedido | null;
     eRt: boolean;
 };
@@ -105,7 +115,7 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
     const motivo = !eRt
         ? 'Só o responsável técnico libera laudos.'
         : !pedido.pronto
-          ? 'Todos os itens precisam de resultados digitados.'
+          ? `Falta resultado de ${pedido.faltando.length === 1 ? '1 exame' : `${pedido.faltando.length} exames`} para liberar.`
           : pendente
             ? `Registre o aviso do valor crítico de ${pendente.nome} antes de liberar.`
             : null;
@@ -114,6 +124,11 @@ function Conferencia({ pedido, eRt }: { pedido: Pedido; eRt: boolean }) {
         <div className="grid min-w-0 items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_300px]">
             <Card title={`${pedido.protocolo} · ${pedido.paciente}`}>
                 {pedido.retificacao && <Alert tone="warn" title={`Laudo em retificação · ${pedido.retificacao}`} />}
+                {pedido.faltando.length > 0 && (
+                    <Alert tone="warn" title={`Falta: ${pedido.faltando.join('; ')}`}>
+                        Confira o que já chegou. O laudo só pode ser liberado com todos os resultados.
+                    </Alert>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[620px] text-sm">
                         <caption className="sr-only">Conferência de todos os exames</caption>
@@ -264,6 +279,11 @@ export default function Liberacao({ fila, selecionado, eRt }: Props) {
                                                         <StatusBadge tone="warn">Retificação</StatusBadge>
                                                         <span className="text-muted-foreground block text-xs">{p.retificacao}</span>
                                                     </>
+                                                )}
+                                                {p.faltando.length > 0 && (
+                                                    <StatusBadge tone="warn">
+                                                        {p.faltando.length === 1 ? 'Falta 1 exame' : `Faltam ${p.faltando.length} exames`}
+                                                    </StatusBadge>
                                                 )}
                                                 {p.criticos > 0 && <StatusBadge tone="crit">{plural(p.criticos, 'crítico', 'críticos')}</StatusBadge>}
                                                 {p.alterados > 0 && (

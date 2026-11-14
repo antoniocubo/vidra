@@ -136,7 +136,7 @@ it('isola resultados laudos e avisos e retorna 404 para ids de outro laboratóri
     $this->post(route('lab.bancada.reabrir', ['item' => $item]))->assertNotFound();
 });
 
-it('só põe o pedido na fila com todos os itens ativos digitados e preserva cancelados', function (): void {
+it('mostra o pedido incompleto na fila com o que falta, mas só libera completo, e preserva cancelados', function (): void {
     $this->post(route('lab.pedidos.store'), [
         'paciente_id' => $this->c['animal'], 'solicitante_id' => $this->c['vinculo'], 'pagador' => 'responsavel',
         'prioridade' => 'rotina', 'exame_ids' => [$this->c['bioquimico'], $this->c['hemograma']],
@@ -149,10 +149,12 @@ it('só põe o pedido na fila com todos os itens ativos digitados e preserva can
     }
     digitarBancada($this, $item, '4');
     enviarBancada($this, $item);
-    $this->get(route('lab.liberacao.index'))->assertInertia(fn (Assert $p) => $p->has('fila', 0));
+    $this->get(route('lab.liberacao.index'))->assertInertia(fn (Assert $p) => $p->has('fila', 1)
+        ->where('fila.0.faltando', ['Hemograma completo · em análise na bancada'])
+        ->where('selecionado.pronto', false));
     $this->post(route('lab.liberacao.liberar', ['pedido' => $pedido]))->assertSessionHasErrors('form');
     DB::table('pedido_itens')->where('id', $outroItem)->update(['situacao' => 'cancelado']);
-    $this->get(route('lab.liberacao.index'))->assertInertia(fn (Assert $p) => $p->has('fila', 1));
+    $this->get(route('lab.liberacao.index'))->assertInertia(fn (Assert $p) => $p->has('fila', 1)->where('fila.0.faltando', [])->where('selecionado.pronto', true));
     $this->post(route('lab.liberacao.liberar', ['pedido' => $pedido]))->assertSessionHasNoErrors();
     $this->assertDatabaseHas('pedido_itens', ['id' => $outroItem, 'situacao' => 'cancelado']);
 });
@@ -176,4 +178,13 @@ it('numera laudos e códigos únicos por laboratório e impede duplicar a libera
     digitarBancada($this, $item, '4');
     enviarBancada($this, $item);
     $this->post(route('lab.liberacao.liberar', ['pedido' => $pedido]))->assertSessionHasNoErrors()->assertSessionHas('success', 'Laudo L-00001 liberado.');
+});
+
+it('não põe na fila o pedido que ainda não tem nenhum resultado', function (): void {
+    $this->post(route('lab.pedidos.store'), [
+        'paciente_id' => $this->c['animal'], 'solicitante_id' => $this->c['vinculo'], 'pagador' => 'responsavel',
+        'prioridade' => 'rotina', 'exame_ids' => [$this->c['bioquimico']],
+    ])->assertSessionHasNoErrors();
+
+    $this->get(route('lab.liberacao.index'))->assertInertia(fn (Assert $p) => $p->has('fila', 0));
 });
