@@ -18,9 +18,9 @@ export default function Termos() {
             <Secao titulo="2. Planos e cobrança">
                 <p>A cobrança é por pedido (atendimento), não por exame.</p>
                 <ul>
-                    <li>Bancada: R$ 290 por mês, 600 pedidos incluídos.</li>
-                    <li>Laboratório: R$ 590 por mês, 2.000 pedidos incluídos.</li>
-                    <li>Rede: R$ 1.190 por mês, 6.000 pedidos incluídos.</li>
+                    <li>Bancada: R$ 240 por mês, 600 pedidos incluídos.</li>
+                    <li>Laboratório: R$ 540 por mês, 2.000 pedidos incluídos.</li>
+                    <li>Rede: R$ 1.140 por mês, 6.000 pedidos incluídos.</li>
                     <li>Pedidos acima do plano: R$ 0,25 por pedido.</li>
                     <li>Teste de 14 dias, sem taxa de implantação.</li>
                     <li>No plano anual, 2 meses grátis.</li>

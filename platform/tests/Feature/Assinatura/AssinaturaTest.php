@@ -32,7 +32,7 @@ beforeEach(function (): void {
 
 function evento(string $tipo = 'PAYMENT_RECEIVED', string $id = 'pay_1'): array
 {
-    return ['event' => $tipo, 'payment' => ['id' => $id, 'customer' => 'cus_1', 'value' => 290.0, 'dueDate' => '2026-12-10', 'invoiceUrl' => 'https://asaas.test/i/1']];
+    return ['event' => $tipo, 'payment' => ['id' => $id, 'customer' => 'cus_1', 'value' => 240.0, 'dueDate' => '2026-12-10', 'invoiceUrl' => 'https://asaas.test/i/1']];
 }
 
 it('recusa o webhook com token errado ou ausente', function (): void {
@@ -110,7 +110,7 @@ it('assinar chama o Asaas com cliente, assinatura e a primeira cobrança', funct
     Http::fake([
         '*/customers' => Http::response(['id' => 'cus_9']),
         '*/subscriptions' => Http::response(['id' => 'sub_9']),
-        '*/subscriptions/sub_9/payments' => Http::response(['data' => [['id' => 'pay_9', 'invoiceUrl' => 'https://asaas.test/i/9', 'value' => 590.0, 'dueDate' => '2026-12-10']]]),
+        '*/subscriptions/sub_9/payments' => Http::response(['data' => [['id' => 'pay_9', 'invoiceUrl' => 'https://asaas.test/i/9', 'value' => 540.0, 'dueDate' => '2026-12-10']]]),
     ]);
     $this->actingAs($this->admin)->withSession(['laboratorio_id' => $this->lab]);
 
@@ -119,7 +119,7 @@ it('assinar chama o Asaas com cliente, assinatura e a primeira cobrança', funct
     Http::assertSent(fn ($r) => $r->url() === 'https://sandbox.asaas.com/api/v3/customers' && $r->header('access_token') === ['chave-teste']
         && $r['name'] === 'Laboratório Alfa' && $r['email'] === $this->admin->email && $r['externalReference'] === $this->lab);
     Http::assertSent(fn ($r) => $r->url() === 'https://sandbox.asaas.com/api/v3/subscriptions' && $r['customer'] === 'cus_9' && $r['billingType'] === 'UNDEFINED'
-        && $r['value'] === 590 && $r['cycle'] === 'MONTHLY' && $r['nextDueDate'] === (new DateTimeImmutable((string) lab()->where('id', $this->lab)->value('teste_termina_em'), new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('Y-m-d'));
+        && $r['value'] === 540 && $r['cycle'] === 'MONTHLY' && $r['nextDueDate'] === (new DateTimeImmutable((string) lab()->where('id', $this->lab)->value('teste_termina_em'), new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('America/Sao_Paulo'))->format('Y-m-d'));
     $row = lab()->where('id', $this->lab)->first();
     expect($row->asaas_cliente_id)->toBe('cus_9')->and($row->asaas_assinatura_id)->toBe('sub_9')->and($row->plano)->toBe('laboratorio')
         ->and(DB::table('cobrancas_vidra')->where('asaas_pagamento_id', 'pay_9')->value('link_pagamento'))->toBe('https://asaas.test/i/9');

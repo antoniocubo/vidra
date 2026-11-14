@@ -61,13 +61,13 @@ it('cobra R$ 0,25 por pedido acima do limite do plano', function (int $pedidos, 
         ->and((new ConsumoDoMes(Plano::Bancada, Cobranca::Mensal, $pedidos))->valorDoMesCentavos())->toBe($mensal)
         ->and((new ConsumoDoMes(Plano::Bancada, Cobranca::Anual, $pedidos))->valorDoMesCentavos())->toBe($anual);
 })->with([
-    'dentro do limite' => [599, 0, 29000, 0],
-    'no limite' => [600, 0, 29000, 0],
-    'um a mais' => [601, 1, 29025, 25],
-    '400 a mais' => [1000, 400, 39000, 10000],
+    'dentro do limite' => [599, 0, 24000, 0],
+    'no limite' => [600, 0, 24000, 0],
+    'um a mais' => [601, 1, 24025, 25],
+    '400 a mais' => [1000, 400, 34000, 10000],
 ]);
 
 it('o anual custa dez mensalidades (dois meses grátis)', function (): void {
-    expect(Plano::Laboratorio->precoEmCentavos(Cobranca::Anual))->toBe(590000)
+    expect(Plano::Laboratorio->precoEmCentavos(Cobranca::Anual))->toBe(540000)
         ->and((new ConsumoDoMes(Plano::Rede, Cobranca::Mensal, 3000))->percentualUsado())->toBe(50);
 });

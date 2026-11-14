@@ -39,7 +39,7 @@ it('assinar durante o teste cobra só no fim do teste e guarda os ids do gateway
         ->and($this->assinaturas->vinculos['alfa']['cliente'])->toBe('cus_1')
         ->and($this->assinaturas->doLaboratorio('alfa')->plano())->toBe(Plano::Laboratorio)
         ->and($this->assinaturas->doLaboratorio('alfa')->cobranca())->toBe(Cobranca::Anual)
-        ->and(array_values($this->cobrancas->cobrancas)[0]->valorCentavos)->toBe(590000);
+        ->and(array_values($this->cobrancas->cobrancas)[0]->valorCentavos)->toBe(540000);
 });
 
 it('trocar de plano cancela a assinatura antiga antes de criar a nova', function (): void {

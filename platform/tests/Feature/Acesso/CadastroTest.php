@@ -9,7 +9,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\DadosCadastro;
 
 it('mostra as quatro etapas com planos e estados disponíveis', function (): void {
-    $this->get(route('cadastro'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('acesso/cadastro')->has('ufs', 27)->has('planos', 3)->where('planos.1.preco', 59000));
+    $this->get(route('cadastro'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('acesso/cadastro')->has('ufs', 27)->has('planos', 3)->where('planos.1.preco', 54000));
 });
 it('cadastra laboratório usuário e vínculo e entra como administrador', function (): void {
     $this->travelTo(now()->setDate(2026, 11, 6)->setTime(15, 0));

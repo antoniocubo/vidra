@@ -39,7 +39,7 @@ enum Plano: string
     public function precoEmCentavos(Cobranca $cobranca = Cobranca::Mensal): int
     {
         return (match ($this) {
-            self::Bancada => 29000, self::Laboratorio => 59000, self::Rede => 119000
+            self::Bancada => 24000, self::Laboratorio => 54000, self::Rede => 114000
         }) * ($cobranca === Cobranca::Anual ? 10 : 1);
     }
 }

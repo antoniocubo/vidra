@@ -33,4 +33,4 @@ it('não registra a linha clínica ainda indisponível', function (): void {
 })->throws(InvalidValue::class);
 it('calcula as franquias e o anual como dez mensalidades', function (Plano $plano, int $preco, int $pedidos, ?int $usuarios): void {
     expect($plano->precoEmCentavos())->toBe($preco)->and($plano->precoEmCentavos(Cobranca::Anual))->toBe($preco * 10)->and($plano->pedidos())->toBe($pedidos)->and($plano->usuarios())->toBe($usuarios);
-})->with([[Plano::Bancada, 29000, 600, 3], [Plano::Laboratorio, 59000, 2000, 10], [Plano::Rede, 119000, 6000, null]]);
+})->with([[Plano::Bancada, 24000, 600, 3], [Plano::Laboratorio, 54000, 2000, 10], [Plano::Rede, 114000, 6000, null]]);
